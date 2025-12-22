@@ -28,6 +28,66 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   color:#0f172a;background:rgba(15,23,42,.06);
 }
 .tab.active{background:#0f172a;color:#fff;pointer-events:none;}
+  #counter-box {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.95);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  z-index: 1000;
+  display: flex;
+  gap: 12px;
+}
+
+#description-box {
+  position: fixed;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.95);
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 90%;
+  text-align: center;
+  z-index: 1000;
+}
+
+#legend-box {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  background: rgba(255,255,255,0.95);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  z-index: 1000;
+}
+
+#notice-box {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(255,255,255,0.95);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  z-index: 1000;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.legend-dot.damage { background: #e53935; }
+.legend-dot.sighting { background: #1e88e5; }
+
 </style>
 </head>
 
