@@ -302,6 +302,62 @@ map.on("load", () => {
       "circle-stroke-width": 1.5
     }
   });
+    /* ===== ポップアップ機能 ===== */
+  map.on('click', 'sighting', (e) => {
+    const coordinates = e.features[0].geometry.coordinates.slice();
+    const props = e.features[0].properties;
+    const titleParts = locations.find(l => l.lat === coordinates[1] && l.lng === coordinates[0])?.title.split("｜") || [];
+    
+    const id = titleParts[0] || "";
+    const place = titleParts[1] || "";
+    const type = titleParts[2] || "";
+    const date = titleParts[3] || "";
+    
+    const [year, month, day] = date.split("-");
+    const dateStr = date ? `${year}年${parseInt(month)}月${parseInt(day)}日` : "日付不明";
+
+    new maplibregl.Popup()
+      .setLngLat(coordinates)
+      .setHTML(`
+        <div style="font-family: system-ui; padding: 4px 0;">
+          <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #3b82f6;">🐻 ${type}</div>
+          <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">📍 ${place}</div>
+          <div style="font-size: 12px; color: #64748b;">📅 ${dateStr}</div>
+        </div>
+      `)
+      .addTo(map);
+  });
+
+  map.on('click', 'damage', (e) => {
+    const coordinates = e.features[0].geometry.coordinates.slice();
+    const props = e.features[0].properties;
+    const titleParts = locations.find(l => l.lat === coordinates[1] && l.lng === coordinates[0])?.title.split("｜") || [];
+    
+    const id = titleParts[0] || "";
+    const place = titleParts[1] || "";
+    const type = titleParts[2] || "";
+    const date = titleParts[3] || "";
+    
+    const [year, month, day] = date.split("-");
+    const dateStr = date ? `${year}年${parseInt(month)}月${parseInt(day)}日` : "日付不明";
+
+    new maplibregl.Popup()
+      .setLngLat(coordinates)
+      .setHTML(`
+        <div style="font-family: system-ui; padding: 4px 0;">
+          <div style="font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #ef4444;">🐻 ${type}</div>
+          <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">📍 ${place}</div>
+          <div style="font-size: 12px; color: #64748b;">📅 ${dateStr}</div>
+        </div>
+      `)
+      .addTo(map);
+  });
+
+  // カーソルをポインターに変更
+  map.on('mouseenter', 'sighting', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'sighting', () => { map.getCanvas().style.cursor = ''; });
+  map.on('mouseenter', 'damage', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'damage', () => { map.getCanvas().style.cursor = ''; });
 });
 </script>
 
