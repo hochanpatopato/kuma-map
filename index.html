@@ -1,35 +1,99 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<title>熊出没ナビ テスト</title>
+<meta charset="UTF-8">
+<title>熊出没ナビ｜岩手県</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
 
 <style>
-html, body { margin:0; height:100%; }
+html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 #map { width:100%; height:100%; }
+
+/* 共通UI */
+.ui {
+  position: fixed;
+  background: rgba(255,255,255,0.92);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 10;
+}
+
+/* 左上 */
+#city {
+  top: 12px;
+  left: 12px;
+}
+
+/* 上 */
+#counter {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+}
+
+/* 左下 */
+#legend {
+  bottom: 12px;
+  left: 12px;
+}
+
+/* 右下 */
+#note {
+  bottom: 12px;
+  right: 12px;
+  max-width: 280px;
+  font-size: 12px;
+}
 </style>
 </head>
+
 <body>
 
 <div id="map"></div>
 
+<div id="city" class="ui">
+  岩手県（全体）
+</div>
+
+<div id="counter" class="ui">
+  被害 <span id="damageCount">0</span>件 ／
+  目撃 <span id="sightingCount">0</span>件
+</div>
+
+<div id="legend" class="ui">
+  <div><span style="color:#ef4444">●</span> 被害</div>
+  <div><span style="color:#3b82f6">●</span> 目撃</div>
+</div>
+
+<div id="note" class="ui">
+  ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。  
+  最新情報は必ず公式発表をご確認ください。
+</div>
+
 <script>
-/* ===== ① データ（3点だけ） ===== */
+/* ===== データ（ここに貼るだけ） ===== */
 const locations = [
-  { lat: 39.5797772686878, lng: 142.020661194983, type: "目撃" },
-  { lat: 39.6550304539014, lng: 141.955164379077, type: "目撃" },
-  { lat: 39.7429, lng: 141.1496, type: "被害" }
+  { lat: 39.5797772686878, lng: 142.020661194983, title: "宮古市｜目撃" },
+  { lat: 39.6550304539014, lng: 141.955164379077, title: "宮古市｜目撃" },
+  { lat: 39.7429, lng: 141.1496, title: "盛岡市｜被害" }
 ];
 
-/* ===== ② 地図 ===== */
+/* ===== 集計 ===== */
+const damageCount = locations.filter(l => l.title.includes("被害")).length;
+const sightingCount = locations.filter(l => l.title.includes("目撃")).length;
+document.getElementById("damageCount").textContent = damageCount;
+document.getElementById("sightingCount").textContent = sightingCount;
+
+/* ===== 地図 ===== */
 const map = new maplibregl.Map({
   container: "map",
   style: "https://demotiles.maplibre.org/style.json",
-  center: [141.9, 39.6],
+  center: [141.7, 39.6],
   zoom: 7
 });
 
@@ -38,7 +102,9 @@ map.on("load", () => {
     type: "FeatureCollection",
     features: locations.map(l => ({
       type: "Feature",
-      properties: { type: l.type },
+      properties: {
+        isDamage: l.title.includes("被害")
+      },
       geometry: {
         type: "Point",
         coordinates: [l.lng, l.lat]
@@ -53,7 +119,7 @@ map.on("load", () => {
     clusterRadius: 50
   });
 
-  // クラスタ円
+  /* クラスタ */
   map.addLayer({
     id: "clusters",
     type: "circle",
@@ -61,11 +127,10 @@ map.on("load", () => {
     filter: ["has", "point_count"],
     paint: {
       "circle-color": "#64748b",
-      "circle-radius": ["step", ["get","point_count"], 16, 5, 22, 10, 28]
+      "circle-radius": ["step", ["get","point_count"], 16, 10, 22, 30, 28]
     }
   });
 
-  // クラスタ数字
   map.addLayer({
     id: "cluster-count",
     type: "symbol",
@@ -78,22 +143,32 @@ map.on("load", () => {
     paint: { "text-color": "#fff" }
   });
 
-  // 目撃
+  /* 目撃 */
   map.addLayer({
     id: "sighting",
     type: "circle",
     source: "bears",
-    filter: ["all", ["!",["has","point_count"]], ["==",["get","type"],"目撃"]],
-    paint: { "circle-radius": 6, "circle-color": "#3b82f6" }
+    filter: ["all", ["!",["has","point_count"]], ["!",["get","isDamage"]]],
+    paint: {
+      "circle-radius": 6,
+      "circle-color": "#3b82f6",
+      "circle-stroke-color": "#fff",
+      "circle-stroke-width": 1
+    }
   });
 
-  // 被害
+  /* 被害 */
   map.addLayer({
     id: "damage",
     type: "circle",
     source: "bears",
-    filter: ["all", ["!",["has","point_count"]], ["==",["get","type"],"被害"]],
-    paint: { "circle-radius": 9, "circle-color": "#ef4444" }
+    filter: ["all", ["!",["has","point_count"]], ["get","isDamage"]],
+    paint: {
+      "circle-radius": 9,
+      "circle-color": "#ef4444",
+      "circle-stroke-color": "#fff",
+      "circle-stroke-width": 1.5
+    }
   });
 });
 </script>
