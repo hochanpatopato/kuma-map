@@ -81,6 +81,94 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   color: white;
   font-weight: bold;
 }
+
+/* 月別グラフ */
+#monthChart {
+  bottom: 350px;
+  left: 12px;
+  max-width: 340px;
+  max-height: 180px;
+}
+#monthChart .title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+#monthChart .chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 120px;
+  padding: 8px 0;
+}
+#monthChart .bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+#monthChart .bars {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 1px;
+}
+#monthChart .bar {
+  width: 100%;
+  border-radius: 2px;
+  transition: opacity 0.2s;
+}
+#monthChart .bar.sighting {
+  background: #3b82f6;
+}
+#monthChart .bar.damage {
+  background: #ef4444;
+}
+#monthChart .month-label {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* 月別フィルタ */
+#monthFilter {
+  bottom: 110px;
+  left: 12px;
+  max-width: 340px;
+}
+#monthFilter .title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+#monthFilter .buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+#monthFilter button {
+  padding: 6px 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #334155;
+}
+#monthFilter button:hover {
+  background: #e2e8f0;
+}
+#monthFilter button.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  font-weight: bold;
+}
 </style>
 </head>
 
@@ -105,6 +193,32 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   <a href="morioka.html">盛岡市</a>
 </div>
 
+<!-- 月別グラフ -->
+<div id="monthChart" class="ui">
+  <div class="title">月別傾向</div>
+  <div class="chart" id="chartBars"></div>
+</div>
+
+<!-- 月別フィルタ -->
+<div id="monthFilter" class="ui">
+  <div class="title">月別フィルタ</div>
+  <div class="buttons">
+    <button data-month="all" class="active">全期間</button>
+    <button data-month="1">1月</button>
+    <button data-month="2">2月</button>
+    <button data-month="3">3月</button>
+    <button data-month="4">4月</button>
+    <button data-month="5">5月</button>
+    <button data-month="6">6月</button>
+    <button data-month="7">7月</button>
+    <button data-month="8">8月</button>
+    <button data-month="9">9月</button>
+    <button data-month="10">10月</button>
+    <button data-month="11">11月</button>
+    <button data-month="12">12月</button>
+  </div>
+</div>
+
 <div id="legend" class="ui">
   <div><span style="color:#ef4444">●</span> 被害</div>
   <div><span style="color:#3b82f6">●</span> 目撃</div>
@@ -116,7 +230,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 </div>
 
 <script>
-/* ===== データ（ここに貼るだけ） ===== */
+/* ===== データ（ここに全市町村のデータを貼る） ===== */
 const locations = [
 { lat: 39.5797772686878, lng: 142.020661194983, title: "488｜岩手県宮古市｜目撃｜2025-12-20" },
 { lat: 39.6550304539014, lng: 141.955164379077, title: "487｜岩手県宮古市｜目撃｜2025-12-15" },
@@ -215,11 +329,69 @@ const locations = [
 { lat: 39.7268, lng: 141.1874, title: "｜岩手県盛岡市｜被害｜2018-07-12" }
 ];
 
-/* ===== 集計 ===== */
-const damageCount = locations.filter(l => l.title.includes("被害")).length;
-const sightingCount = locations.filter(l => l.title.includes("目撃")).length;
-document.getElementById("damageCount").textContent = damageCount;
-document.getElementById("sightingCount").textContent = sightingCount;
+/* ===== 月を抽出する関数 ===== */
+function getMonthFromTitle(title) {
+  const parts = title.split("｜");
+  if (parts.length >= 4) {
+    const dateStr = parts[3];
+    const month = parseInt(dateStr.split("-")[1], 10);
+    return month;
+  }
+  return null;
+}
+
+/* ===== 集計関数（フィルタ対応） ===== */
+function updateCounts(filteredData) {
+  const damageCount = filteredData.filter(l => l.title.includes("被害")).length;
+  const sightingCount = filteredData.filter(l => l.title.includes("目撃")).length;
+  document.getElementById("damageCount").textContent = damageCount;
+  document.getElementById("sightingCount").textContent = sightingCount;
+}
+
+/* ===== 月別集計とグラフ描画 ===== */
+function drawMonthChart() {
+  const monthData = {};
+  for (let i = 1; i <= 12; i++) {
+    monthData[i] = { sighting: 0, damage: 0 };
+  }
+  
+  locations.forEach(l => {
+    const month = getMonthFromTitle(l.title);
+    if (month) {
+      if (l.title.includes("被害")) {
+        monthData[month].damage++;
+      } else {
+        monthData[month].sighting++;
+      }
+    }
+  });
+  
+  const chartContainer = document.getElementById("chartBars");
+  const maxCount = Math.max(...Object.values(monthData).map(d => d.sighting + d.damage));
+  
+  chartContainer.innerHTML = "";
+  
+  for (let i = 1; i <= 12; i++) {
+    const total = monthData[i].sighting + monthData[i].damage;
+    const sightingHeight = maxCount > 0 ? (monthData[i].sighting / maxCount) * 100 : 0;
+    const damageHeight = maxCount > 0 ? (monthData[i].damage / maxCount) * 100 : 0;
+    
+    const barGroup = document.createElement("div");
+    barGroup.className = "bar-group";
+    barGroup.innerHTML = `
+      <div class="bars">
+        ${monthData[i].damage > 0 ? `<div class="bar damage" style="height: ${damageHeight}px;" title="被害 ${monthData[i].damage}件"></div>` : ''}
+        ${monthData[i].sighting > 0 ? `<div class="bar sighting" style="height: ${sightingHeight}px;" title="目撃 ${monthData[i].sighting}件"></div>` : ''}
+      </div>
+      <div class="month-label">${i}月</div>
+    `;
+    chartContainer.appendChild(barGroup);
+  }
+}
+
+/* ===== 初期集計 ===== */
+updateCounts(locations);
+drawMonthChart();
 
 /* ===== 地図 ===== */
 const map = new maplibregl.Map({
@@ -229,13 +401,16 @@ const map = new maplibregl.Map({
   zoom: 7
 });
 
+let currentMonth = "all";
+
 map.on("load", () => {
   const geojson = {
     type: "FeatureCollection",
     features: locations.map(l => ({
       type: "Feature",
       properties: {
-        isDamage: l.title.includes("被害")
+        isDamage: l.title.includes("被害"),
+        month: getMonthFromTitle(l.title)
       },
       geometry: {
         type: "Point",
@@ -251,7 +426,6 @@ map.on("load", () => {
     clusterRadius: 50
   });
 
-  /* クラスタ */
   map.addLayer({
     id: "clusters",
     type: "circle",
@@ -275,7 +449,6 @@ map.on("load", () => {
     paint: { "text-color": "#fff" }
   });
 
-  /* 目撃 */
   map.addLayer({
     id: "sighting",
     type: "circle",
@@ -289,7 +462,6 @@ map.on("load", () => {
     }
   });
 
-  /* 被害 */
   map.addLayer({
     id: "damage",
     type: "circle",
@@ -302,10 +474,10 @@ map.on("load", () => {
       "circle-stroke-width": 1.5
     }
   });
-    /* ===== ポップアップ機能 ===== */
+
+  /* ===== ポップアップ機能 ===== */
   map.on('click', 'sighting', (e) => {
     const coordinates = e.features[0].geometry.coordinates.slice();
-    const props = e.features[0].properties;
     const titleParts = locations.find(l => l.lat === coordinates[1] && l.lng === coordinates[0])?.title.split("｜") || [];
     
     const id = titleParts[0] || "";
@@ -330,7 +502,6 @@ map.on("load", () => {
 
   map.on('click', 'damage', (e) => {
     const coordinates = e.features[0].geometry.coordinates.slice();
-    const props = e.features[0].properties;
     const titleParts = locations.find(l => l.lat === coordinates[1] && l.lng === coordinates[0])?.title.split("｜") || [];
     
     const id = titleParts[0] || "";
@@ -358,6 +529,34 @@ map.on("load", () => {
   map.on('mouseleave', 'sighting', () => { map.getCanvas().style.cursor = ''; });
   map.on('mouseenter', 'damage', () => { map.getCanvas().style.cursor = 'pointer'; });
   map.on('mouseleave', 'damage', () => { map.getCanvas().style.cursor = ''; });
+
+  /* ===== 月別フィルタボタン ===== */
+  document.querySelectorAll("#monthFilter button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const selectedMonth = btn.dataset.month;
+      currentMonth = selectedMonth;
+
+      document.querySelectorAll("#monthFilter button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      let filter;
+      if (selectedMonth === "all") {
+        filter = ["all"];
+      } else {
+        const month = parseInt(selectedMonth, 10);
+        filter = ["all", ["==", ["get", "month"], month]];
+      }
+
+      map.setFilter("clusters", ["all", ["has", "point_count"], filter]);
+      map.setFilter("sighting", ["all", ["!",["has","point_count"]], ["!",["get","isDamage"]], filter]);
+      map.setFilter("damage", ["all", ["!",["has","point_count"]], ["get","isDamage"], filter]);
+
+      const filteredData = selectedMonth === "all" 
+        ? locations 
+        : locations.filter(l => getMonthFromTitle(l.title) === parseInt(selectedMonth, 10));
+      updateCounts(filteredData);
+    });
+  });
 });
 </script>
 
