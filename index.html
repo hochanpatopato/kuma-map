@@ -41,6 +41,35 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
 </header>
 
 <div id="map"></div>
+<!-- 上部：件数カウンタ -->
+<div id="counter-box">
+  <span class="count damage">被害 <strong id="damageCount">0</strong>件</span>
+  <span class="count sighting">目撃 <strong id="sightingCount">0</strong>件</span>
+</div>
+
+<!-- 上部：説明文 -->
+<div id="description-box">
+  <h1>熊出没ナビ（岩手県）</h1>
+  <p>
+    本サイトは、岩手県内で公開されている熊の目撃・被害情報をもとに、<br>
+    地域別・時系列で傾向を把握できるよう可視化した参考情報です。
+  </p>
+</div>
+
+<!-- 左下：凡例 -->
+<div id="legend-box">
+  <div><span class="legend-dot damage"></span> 被害</div>
+  <div><span class="legend-dot sighting"></span> 目撃</div>
+  <small>※直近7日の被害は強調表示</small>
+</div>
+
+<!-- 右下：注意文 -->
+<div id="notice-box">
+  <small>
+    ※ 本情報は公開データをもとにした参考表示です。<br>
+    最新状況や安全判断については、必ず自治体・警察等の公式発表をご確認ください。
+  </small>
+</div>
 
 <script>
 const map = new maplibregl.Map({
