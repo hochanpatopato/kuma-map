@@ -32,7 +32,39 @@
 </head>
 <body>
 
-<div id="map"></div><div style="
+<div id="map"></div><!-- 県トップ：市町村セレクタ（上部固定） -->
+<div style="
+  position: fixed; left: 12px; top: 12px; z-index: 9999;
+  display: flex; gap: 8px; align-items: center;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(15,23,42,0.08);
+  box-shadow: 0 10px 25px rgba(15,23,42,0.10);
+  padding: 10px 12px; border-radius: 12px;
+  backdrop-filter: blur(10px);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+">
+  <div style="font-size:13px; font-weight:700; color:#0f172a;">
+    岩手県
+  </div>
+
+  <a href="./morioka.html" style="
+    text-decoration:none; font-size:13px; font-weight:700;
+    padding: 8px 10px; border-radius: 10px;
+    color:#0f172a; background: rgba(15,23,42,0.06);
+  ">盛岡</a>
+
+  <a href="./miyako.html" style="
+    text-decoration:none; font-size:13px; font-weight:700;
+    padding: 8px 10px; border-radius: 10px;
+    color:#0f172a; background: rgba(15,23,42,0.06);
+  ">宮古</a>
+
+  <div style="font-size:12px; color: rgba(15,23,42,0.60); padding-left:4px;">
+    市町村ページへ
+  </div>
+</div>
+
+  <div style="
   position: fixed;
   top: 56px;
   left: 50%;
