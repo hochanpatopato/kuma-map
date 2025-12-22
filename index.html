@@ -1,356 +1,102 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<title>熊出没ナビ｜岩手県の熊目撃・被害マップ</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description"
-  content="岩手県内で公開されている熊の目撃・被害情報を、地図と時系列で分かりやすく可視化しています。観光・登山・散歩前の参考に。" />
+<meta charset="utf-8">
+<title>熊出没ナビ テスト</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
 
 <style>
-html, body { margin:0; padding:0; height:100%; }
+html, body { margin:0; height:100%; }
 #map { width:100%; height:100%; }
-
-/* ===== UI固定レイヤ ===== */
-.ui-box {
-  position: fixed;
-  background: rgba(255,255,255,0.92);
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 13px;
-  z-index: 10;
-}
-
-/* 左上：市町村切替 */
-#city-tabs {
-  top: 12px; left: 12px;
-  display: flex; gap: 6px;
-}
-#city-tabs button {
-  border: none;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #e5e7eb;
-}
-#city-tabs button.active {
-  background: #111827;
-  color: #fff;
-}
-
-/* 上中央：集計 */
-#summary {
-  top: 12px; left: 50%;
-  transform: translateX(-50%);
-  display: flex; gap: 12px;
-  font-weight: bold;
-}
-
-/* 上中央下：説明 */
-#description {
-  top: 56px; left: 50%;
-  transform: translateX(-50%);
-  max-width: 520px;
-}
-
-/* 左下：凡例 */
-#legend {
-  bottom: 12px; left: 12px;
-  line-height: 1.6;
-}
-
-/* 右下：注意 */
-#notice {
-  bottom: 12px; right: 12px;
-  max-width: 340px;
-  font-size: 12px;
-}
 </style>
 </head>
-
 <body>
+
 <div id="map"></div>
 
-<!-- 左上 -->
-<div id="city-tabs" class="ui-box">
-  <button data-city="all" class="active">全体</button>
-  <button data-city="盛岡">盛岡</button>
-  <button data-city="宮古">宮古</button>
-</div>
-
-<!-- 上 -->
-<div id="summary" class="ui-box">
-  <span id="damageCount">被害 0件</span>
-  <span id="sightingCount">目撃 0件</span>
-</div>
-
-<div id="description" class="ui-box">
-  <strong>熊出没ナビ（岩手県）</strong><br>
-  本サイトは、岩手県内で公開されている熊の目撃・被害情報をもとに、
-  地域別・時系列で傾向を把握できるよう可視化した参考情報です。
-</div>
-
-<!-- 左下 -->
-<div id="legend" class="ui-box">
-  <div><span style="color:#ef4444">●</span> 被害</div>
-  <div><span style="color:#3b82f6">●</span> 目撃</div>
-  <div style="opacity:.7">※直近7日の被害は強調表示</div>
-</div>
-
-<!-- 右下 -->
-<div id="notice" class="ui-box">
-  ※ 本情報は公開データをもとにした参考表示です。<br>
-  最新状況や安全判断については、必ず自治体・警察等の公式発表をご確認ください。
-</div>
-
 <script>
-/* =========================
-   { lat: 39.5797772686878, lng: 142.020661194983, title: "46011｜岩手県宮古市｜目撃" },
-{ lat: 39.6550304539014, lng: 141.955164379077, title: "46006｜岩手県宮古市｜目撃" },
-{ lat: 39.6197059481786, lng: 141.960868835449, title: "45998｜岩手県宮古市｜目撃" },
-{ lat: 39.6406611857563, lng: 141.937952041625, title: "45998｜岩手県宮古市｜目撃" },
-{ lat: 39.6549512549525, lng: 141.955966019392, title: "45997｜岩手県宮古市｜目撃" },
-{ lat: 39.6356408726103, lng: 141.933422410742, title: "45997｜岩手県宮古市｜目撃" },
-{ lat: 39.6823823943902, lng: 141.962672479623, title: "45996｜岩手県宮古市｜目撃" },
-{ lat: 39.6515008839971, lng: 141.935178253145, title: "45994｜岩手県宮古市｜目撃" },
-{ lat: 39.7358369339244, lng: 141.967757271298, title: "45993｜岩手県宮古市｜目撃" },
-{ lat: 39.6350128039753, lng: 141.931895147751, title: "45974｜岩手県宮古市｜目撃" },
-{ lat: 39.6433544979967, lng: 141.920120716094, title: "45993｜岩手県宮古市｜目撃" },
-{ lat: 39.6488073060816, lng: 141.937961244955, title: "45992｜岩手県宮古市｜目撃" },
-{ lat: 39.6430387214954, lng: 141.914684583912, title: "45992｜岩手県宮古市｜目撃" },
-{ lat: 39.6398008266068, lng: 141.915873321521, title: "45992｜岩手県宮古市｜目撃" },
-{ lat: 39.6639337739034, lng: 141.950269125086, title: "45991｜岩手県宮古市｜目撃" },
-{ lat: 39.6355055961678, lng: 141.942179203033, title: "45991｜岩手県宮古市｜目撃" },
-{ lat: 39.6495871420263, lng: 141.75811149189, title: "45989｜岩手県宮古市｜目撃" },
-{ lat: 39.6385461185689, lng: 141.916279792785, title: "45989｜岩手県宮古市｜目撃" },
-{ lat: 39.6471414258119, lng: 141.756253114254, title: "45989｜岩手県宮古市｜目撃" },
-{ lat: 39.6398874108185, lng: 141.916038345728, title: "45989｜岩手県宮古市｜目撃" },
-{ lat: 39.6324512572526, lng: 141.911737029081, title: "45988｜岩手県宮古市｜目撃" },
-{ lat: 39.6235564223238, lng: 141.957831244922, title: "45986｜岩手県宮古市｜目撃" },
-{ lat: 39.619023760991, lng: 141.800289237215, title: "45985｜岩手県宮古市｜目撃" },
-{ lat: 39.6276317821409, lng: 141.81961560106, title: "45985｜岩手県宮古市｜目撃" },
-{ lat: 39.6227635102429, lng: 141.957386276062, title: "45986｜岩手県宮古市｜目撃" },
-{ lat: 39.619365426873, lng: 141.964508170392, title: "45986｜岩手県宮古市｜目撃" },
-{ lat: 39.6227737982676, lng: 141.957362899981, title: "45986｜岩手県宮古市｜目撃" },
-{ lat: 39.6501492751195, lng: 141.964682936668, title: "45981｜岩手県宮古市｜目撃" },
-{ lat: 39.6505566322119, lng: 141.932284656752, title: "45982｜岩手県宮古市｜目撃" },
-{ lat: 39.650611845351, lng: 141.932292325457, title: "45981｜岩手県宮古市｜目撃" },
-{ lat: 39.64524875714, lng: 141.9496129486, title: "45981｜岩手県宮古市｜目撃" },
-{ lat: 39.6039560133501, lng: 141.693591579067, title: "45979｜岩手県宮古市｜目撃" },
-{ lat: 39.541644394051, lng: 141.575466730395, title: "45979｜岩手県宮古市｜目撃" },
-{ lat: 39.5713953528018, lng: 141.933312960298, title: "45979｜岩手県宮古市｜目撃" },
-{ lat: 39.6380904344865, lng: 141.92624826279, title: "45972｜岩手県宮古市｜目撃" },
-{ lat: 39.6534211927324, lng: 141.94890558295, title: "45978｜岩手県宮古市｜目撃" },
-{ lat: 39.6232760586092, lng: 141.794056892395, title: "45978｜岩手県宮古市｜目撃" },
-{ lat: 39.6234000174685, lng: 141.796964406967, title: "45978｜岩手県宮古市｜目撃" },
-{ lat: 39.7114125252369, lng: 141.98264837265, title: "45978｜岩手県宮古市｜目撃" },
-{ lat: 39.6516327857348, lng: 141.932412277862, title: "45977｜岩手県宮古市｜目撃" },
-{ lat: 39.5994365493752, lng: 141.680034226726, title: "45977｜岩手県宮古市｜目撃" },
-{ lat: 39.6594080953137, lng: 141.947528534099, title: "45977｜岩手県宮古市｜目撃" },
-{ lat: 39.6522513757412, lng: 141.929823596161, title: "45976｜岩手県宮古市｜目撃" },
-{ lat: 39.628752748066, lng: 141.84856792497, title: "45976｜岩手県宮古市｜目撃" },
-{ lat: 39.6498997745204, lng: 141.909869775502, title: "45976｜岩手県宮古市｜目撃" },
-{ lat: 39.632645166021, lng: 141.901893768398, title: "45976｜岩手県宮古市｜目撃" },
-{ lat: 39.6457254601203, lng: 141.919522490955, title: "45976｜岩手県宮古市｜目撃" },
-{ lat: 39.6524328638387, lng: 141.928942926616, title: "45976｜岩手県宮古市｜目撃" },
-{ lat: 39.5768006422608, lng: 141.946513652801, title: "45977｜岩手県宮古市｜目撃" },
-{ lat: 39.7114603056881, lng: 141.982312056022, title: "45978｜岩手県宮古市｜目撃" },
-{ lat: 39.6233148447066, lng: 141.794714846949, title: "45978｜岩手県宮古市｜目撃" },
-{ lat: 39.556580665779, lng: 141.919932795248, title: "45975｜岩手県宮古市｜目撃" },
-{ lat: 39.5978515372742, lng: 141.942200660705, title: "45974｜岩手県宮古市｜目撃" },
-{ lat: 39.6659861020392, lng: 141.95212075188, title: "45973｜岩手県宮古市｜目撃" },
-{ lat: 39.6581515688504, lng: 141.951548431204, title: "45973｜岩手県宮古市｜目撃" },
-{ lat: 39.657589664245, lng: 141.951230460653, title: "45972｜岩手県宮古市｜目撃" },
-{ lat: 39.6123849214475, lng: 141.902117846012, title: "45971｜岩手県宮古市｜目撃" },
-{ lat: 39.5904218732014, lng: 141.875430912334, title: "45971｜岩手県宮古市｜目撃" },
-{ lat: 39.6589421753308, lng: 141.954230117682, title: "45970｜岩手県宮古市｜目撃" },
-{ lat: 39.6219035582147, lng: 141.947118503261, title: "45970｜岩手県宮古市｜目撃" },
-{ lat: 39.7042219450126, lng: 141.984601233447, title: "45969｜岩手県宮古市｜目撃" },
-{ lat: 39.5669218845071, lng: 141.914802611351, title: "45969｜岩手県宮古市｜目撃" },
-{ lat: 39.6462189301127, lng: 141.944702118934, title: "45968｜岩手県宮古市｜目撃" },
-{ lat: 39.6364208157701, lng: 141.934250884971, title: "45968｜岩手県宮古市｜目撃" },
-{ lat: 39.6031184479927, lng: 141.880214735241, title: "45967｜岩手県宮古市｜被害" },
-{ lat: 39.5963302148125, lng: 141.872904516218, title: "45967｜岩手県宮古市｜被害" },
-{ lat: 39.6671006676513, lng: 141.953171713011, title: "45968｜岩手県宮古市｜目撃" },
-{ lat: 39.6584625427854, lng: 141.952712833029, title: "45968｜岩手県宮古市｜目撃" },
-{ lat: 39.6314512535509, lng: 141.906392632457, title: "45967｜岩手県宮古市｜目撃" },
-{ lat: 39.6803118742315, lng: 141.964415989782, title: "45967｜岩手県宮古市｜目撃" },
-{ lat: 39.5096520065823, lng: 141.681112470888, title: "45967｜岩手県宮古市｜目撃" },
-{ lat: 39.6853665510434, lng: 141.984994917276, title: "45967｜岩手県宮古市｜目撃" },
-{ lat: 39.6357981515485, lng: 141.886112749122, title: "45967｜岩手県宮古市｜目撃" },
-{ lat: 39.5984971086334, lng: 141.684432474124, title: "45967｜岩手県宮古市｜目撃" },
-{ lat: 39.6421906134248, lng: 141.922775175461, title: "45960｜岩手県宮古市｜目撃" },
-{ lat: 39.6478995357755, lng: 141.933004173771, title: "45961｜岩手県宮古市｜目撃" },
-{ lat: 39.6497035592771, lng: 141.973397953109, title: "45967｜岩手県宮古市｜目撃" },
-{ lat: 39.5928250391503, lng: 141.672949790954, title: "45966｜岩手県宮古市｜目撃" },
-{ lat: 39.6449123440215, lng: 141.925331880394, title: "45959｜岩手県宮古市｜目撃" },
-{ lat: 39.6411184290506, lng: 141.936142155234, title: "45959｜岩手県宮古市｜目撃" },
-{ lat: 39.6338147712019, lng: 141.918714297422, title: "45958｜岩手県宮古市｜目撃" },
-{ lat: 39.6218573201121, lng: 141.904266518101, title: "45957｜岩手県宮古市｜目撃" },
-{ lat: 39.6101945386173, lng: 141.889741026588, title: "45956｜岩手県宮古市｜目撃" },
-{ lat: 39.5987726314859, lng: 141.875633940182, title: "45955｜岩手県宮古市｜目撃" },
-{ lat: 39.5872149336404, lng: 141.860112736501, title: "45954｜岩手県宮古市｜目撃" },
-{ lat: 39.5768293048827, lng: 141.84299142711, title: "45953｜岩手県宮古市｜目撃" },
-{ lat: 39.5659911734021, lng: 141.829504183472, title: "45952｜岩手県宮古市｜目撃" },
-{ lat: 39.5538872104926, lng: 141.814229460381, title: "45951｜岩手県宮古市｜目撃" },
-{ lat: 39.5426103348019, lng: 141.798442317229, title: "45950｜岩手県宮古市｜目撃" },
-{ lat: 39.5312254803921, lng: 141.782105341762, title: "45949｜岩手県宮古市｜目撃" },
-{ lat: 39.7429, lng: 141.1496, title: "45838｜岩手県盛岡市｜被害" },
-{ lat: 39.7056, lng: 141.0885, title: "45942｜岩手県盛岡市｜被害" },
-{ lat: 39.6864, lng: 141.0598, title: "44078｜岩手県盛岡市｜被害" },
-{ lat: 39.6502, lng: 141.2107, title: "43599｜岩手県盛岡市｜被害" },
-{ lat: 39.7268, lng: 141.1874, title: "43293｜岩手県盛岡市｜被害" }
-========================= */
+/* ===== ① データ（3点だけ） ===== */
 const locations = [
-  // { prefecture, municipality, latitude, longitude, date, type }
+  { lat: 39.5797772686878, lng: 142.020661194983, type: "目撃" },
+  { lat: 39.6550304539014, lng: 141.955164379077, type: "目撃" },
+  { lat: 39.7429, lng: 141.1496, type: "被害" }
 ];
 
-/* =========================
-   ② Map 初期化
-========================= */
+/* ===== ② 地図 ===== */
 const map = new maplibregl.Map({
   container: "map",
   style: "https://demotiles.maplibre.org/style.json",
-  center: [141.5, 39.7],
+  center: [141.9, 39.6],
   zoom: 7
 });
 
-const DAY = 24 * 60 * 60 * 1000;
-let currentCity = "all";
-
-/* =========================
-   ③ GeoJSON生成
-========================= */
-function buildGeoJSON(list) {
-  const now = new Date();
-  return {
+map.on("load", () => {
+  const geojson = {
     type: "FeatureCollection",
-    features: list.map(l => ({
+    features: locations.map(l => ({
       type: "Feature",
-      properties: {
-        municipality: l.municipality,
-        isDamage: l.type === "被害",
-        isRecent: l.date ? (now - new Date(l.date)) <= 7 * DAY : false
-      },
+      properties: { type: l.type },
       geometry: {
         type: "Point",
-        coordinates: [l.longitude, l.latitude]
+        coordinates: [l.lng, l.lat]
       }
     }))
   };
-}
 
-/* =========================
-   ④ 集計
-========================= */
-function updateSummary(list) {
-  const d = list.filter(l => l.type === "被害").length;
-  const s = list.filter(l => l.type === "目撃").length;
-  document.getElementById("damageCount").textContent = `被害 ${d}件`;
-  document.getElementById("sightingCount").textContent = `目撃 ${s}件`;
-}
+  map.addSource("bears", {
+    type: "geojson",
+    data: geojson,
+    cluster: true,
+    clusterRadius: 50
+  });
 
-/* =========================
-   ⑤ 地図更新（ここが核）
-========================= */
-function updateMap() {
-  const filtered =
-    currentCity === "all"
-      ? locations
-      : locations.filter(l => l.municipality.includes(currentCity));
+  // クラスタ円
+  map.addLayer({
+    id: "clusters",
+    type: "circle",
+    source: "bears",
+    filter: ["has", "point_count"],
+    paint: {
+      "circle-color": "#64748b",
+      "circle-radius": ["step", ["get","point_count"], 16, 5, 22, 10, 28]
+    }
+  });
 
-  updateSummary(filtered);
+  // クラスタ数字
+  map.addLayer({
+    id: "cluster-count",
+    type: "symbol",
+    source: "bears",
+    filter: ["has", "point_count"],
+    layout: {
+      "text-field": "{point_count_abbreviated}",
+      "text-size": 12
+    },
+    paint: { "text-color": "#fff" }
+  });
 
-  const geojson = buildGeoJSON(filtered);
+  // 目撃
+  map.addLayer({
+    id: "sighting",
+    type: "circle",
+    source: "bears",
+    filter: ["all", ["!",["has","point_count"]], ["==",["get","type"],"目撃"]],
+    paint: { "circle-radius": 6, "circle-color": "#3b82f6" }
+  });
 
-  if (!map.getSource("bears")) {
-    map.addSource("bears", {
-      type: "geojson",
-      data: geojson,
-      cluster: true,
-      clusterRadius: 50,
-      clusterMaxZoom: 12
-    });
-
-    // クラスタ円
-    map.addLayer({
-      id: "clusters",
-      type: "circle",
-      source: "bears",
-      filter: ["has", "point_count"],
-      paint: {
-        "circle-color": "#64748b",
-        "circle-radius": ["step", ["get","point_count"], 16, 10, 22, 30, 28],
-        "circle-opacity": 0.85
-      }
-    });
-
-    // クラスタ数字
-    map.addLayer({
-      id: "cluster-count",
-      type: "symbol",
-      source: "bears",
-      filter: ["has", "point_count"],
-      layout: {
-        "text-field": "{point_count_abbreviated}",
-        "text-size": 12
-      },
-      paint: { "text-color": "#fff" }
-    });
-
-    // 目撃
-    map.addLayer({
-      id: "points-sighting",
-      type: "circle",
-      source: "bears",
-      filter: ["all", ["!",["has","point_count"]], ["!",["get","isDamage"]]],
-      paint: {
-        "circle-radius": 6,
-        "circle-color": "#3b82f6",
-        "circle-stroke-color": "#fff",
-        "circle-stroke-width": 1
-      }
-    });
-
-    // 被害
-    map.addLayer({
-      id: "points-damage",
-      type: "circle",
-      source: "bears",
-      filter: ["all", ["!",["has","point_count"]], ["get","isDamage"]],
-      paint: {
-        "circle-radius": 9,
-        "circle-color": "#ef4444",
-        "circle-stroke-color": "#fff",
-        "circle-stroke-width": 1.5
-      }
-    });
-
-  } else {
-    map.getSource("bears").setData(geojson);
-  }
-}
-
-/* =========================
-   ⑥ UI操作
-========================= */
-document.querySelectorAll("#city-tabs button").forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll("#city-tabs button")
-      .forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    currentCity = btn.dataset.city;
-    updateMap();
-  };
+  // 被害
+  map.addLayer({
+    id: "damage",
+    type: "circle",
+    source: "bears",
+    filter: ["all", ["!",["has","point_count"]], ["==",["get","type"],"被害"]],
+    paint: { "circle-radius": 9, "circle-color": "#ef4444" }
+  });
 });
-
-/* =========================
-   ⑦ 起動
-========================= */
-map.on("load", updateMap);
 </script>
+
 </body>
 </html>
