@@ -1,1 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>熊出没ナビ｜岩手県 盛岡市</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="岩手県盛岡市の熊出没・目撃情報を地図で確認">
 
+<link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
+
+<style>
+html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
+#map { width:100%; height:100%; }
+
+.ui {
+  position: fixed;
+  background: rgba(255,255,255,0.92);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 10;
+}
+
+#city {
+  top: 12px;
+  left: 12px;
+}
+
+#counter {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+}
+
+#legend {
+  bottom: 12px;
+  left: 12px;
+}
+
+#note {
+  bottom: 12px;
+  right: 12px;
+  max-width: 280px;
+  font-size: 12px;
+}
+
+#areaSelector {
+  top: 60px;
+  left: 12px;
+  max-width: 150px;
+}
+#areaSelector .title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+#areaSelector a {
+  display: block;
+  padding: 8px 10px;
+  margin: 4px 0;
+  background: #f8fafc;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #334155;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+#areaSelector a:hover {
+  background: #e2e8f0;
+}
+#areaSelector a.active {
+  background: #3b82f6;
+  color: white;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<div id="city" class="ui">
+  岩手県 盛岡市
+</div>
+
+<div id="counter" class="ui">
+  被害 <span id="damageCount">0</span>件 ／
+  目撃 <span id="sightingCount">0</span>件
+</div>
+
+<div id="areaSelector" class="ui">
+  <div class="title">エリア選択</div>
+  <a href="index.html">岩手県 全体</a>
+  <a href="miyako.html">宮古市</a>
+  <a href="morioka.html" class="active">盛岡市</a>
+</div>
+
+<div id="legend" class="ui">
+  <div><span style="color:#ef4444">●</span> 被害</div>
+  <div><span style="color:#3b82f6">●</span> 目撃</div>
+</div>
+
+<div id="note" class="ui">
+  ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。  
+  最新情報は必ず公式発表をご確認ください。
+</div>
+
+<script>
+/* ===== データ（盛岡市のサンプルデータ） ===== */
+/* ここに盛岡市のデータを追加してください */
+const locations = [
+  { lat: 39.7036, lng: 141.1527, title: "S001｜岩手県盛岡市｜目撃" },
+  { lat: 39.7100, lng: 141.1600, title: "S002｜岩手県盛岡市｜被害" },
+  { lat: 39.6950, lng: 141.1450, title: "S003｜岩手県盛岡市｜目撃" }
+];
+
+/* ===== 集計 ===== */
+const damageCount = locations.filter(l => l.title.includes("被害")).length;
+const sightingCount = locations.filter(l => l.title.includes("目撃")).length;
+document.getElementById("damageCount").textContent = damageCount;
+document.getElementById("sightingCount").textContent = sightingCount;
+
+/* ===== 地図（盛岡市中心） ===== */
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://demotiles.maplibre.org/style.json",
+  center: [141.1527, 39.7036],
+  zoom: 11
+});
+
+map.on("load", () => {
+  const geojson = {
+    type: "FeatureCollection",
+    features: locations.map(l => ({
+      type: "Feature",
+      properties: {
+        isDamage: l.title.includes("被害")
+      },
+      geometry: {
+        type: "Point",
+        coordinates: [l.lng, l.lat]
+      }
+    }))
+  };
+
+  map.addSource("bears", {
+    type: "geojson",
+    data: geojson,
+    cluster: true,
+    clusterRadius: 50
+  });
+
+  map.addLayer({
+    id: "clusters",
+    type: "circle",
+    source: "bears",
+    filter: ["has", "point_count"],
+    paint: {
+      "circle-color": "#64748b",
+      "circle-radius": ["step", ["get","point_count"], 16, 10, 22, 30, 28]
+    }
+  });
+
+  map.addLayer({
+    id: "cluster-count",
+    type: "symbol",
+    source: "bears",
+    filter: ["has", "point_count"],
+    layout: {
+      "text-field": "{point_count_abbreviated}",
+      "text-size": 12
+    },
+    paint: { "text-color": "#fff" }
+  });
+
+  map.addLayer({
+    id: "sighting",
+    type: "circle",
+    source: "bears",
+    filter: ["all", ["!",["has","point_count"]], ["!",["get","isDamage"]]],
+    paint: {
+      "circle-radius": 6,
+      "circle-color": "#3b82f6",
+      "circle-stroke-color": "#fff",
+      "circle-stroke-width": 1
+    }
+  });
+
+  map.addLayer({
+    id: "damage",
+    type: "circle",
+    source: "bears",
+    filter: ["all", ["!",["has","point_count"]], ["get","isDamage"]],
+    paint: {
+      "circle-radius": 9,
+      "circle-color": "#ef4444",
+      "circle-stroke-color": "#fff",
+      "circle-stroke-width": 1.5
+    }
+  });
+});
+</script>
+
+</body>
+</html>
