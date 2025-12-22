@@ -1,250 +1,80 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>熊出没ナビ｜岩手県内の熊目撃・被害マップ</title>
-  <meta name="description" content="岩手県内で公開されている熊の目撃・被害情報を、地図と時系列で分かりやすく可視化しています。観光・登山・散歩前の参考に。">
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<title>熊出没ナビ｜盛岡市の熊被害マップ</title>
+<meta name="description" content="岩手県盛岡市で発生した熊による被害情報を地図で可視化しています。">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- MapLibre -->
-  <link
-    href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css"
-    rel="stylesheet"
-  />
-  <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
 
-  <style>
-    body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
-    #map { width: 100vw; height: 100vh; }
+<style>
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;}
+#map{width:100vw;height:100vh;}
 
-    /* 凡例（最小・上品） */
-    .legend {
-      position: fixed;
-      left: 12px;
-      bottom: 12px;
-      background: rgba(255,255,255,0.9);
-      padding: 8px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      line-height: 1.6;
-    }
-  </style>
+.pref-nav{
+  position:fixed;top:12px;left:12px;z-index:1000;
+  display:flex;gap:8px;align-items:center;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(15,23,42,.08);
+  box-shadow:0 10px 25px rgba(15,23,42,.1);
+  padding:10px 12px;border-radius:12px;
+}
+.pref{font-weight:700;font-size:13px;}
+.tab{
+  text-decoration:none;font-size:13px;font-weight:700;
+  padding:8px 10px;border-radius:10px;
+  color:#0f172a;background:rgba(15,23,42,.06);
+}
+.tab.active{background:#0f172a;color:#fff;pointer-events:none;}
+</style>
 </head>
+
 <body>
-  <div class="pref-nav">
+
+<header class="pref-nav">
   <span class="pref">岩手県</span>
-  <a href="/iwate/morioka/">盛岡</a>
-  <a href="/iwate/miyako/">宮古</a>
-</div>
+  <a href="./index.html" class="tab">全体</a>
+  <a href="./morioka.html" class="tab active">盛岡</a>
+  <a href="./miyako.html" class="tab">宮古</a>
+</header>
 
 <div id="map"></div>
-<div id="map"></div><div style="
-  position: fixed;
-  top: 56px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 92%;
-  background: rgba(255,255,255,0.9);
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.7;
-  z-index: 10;
-">
-  <strong>熊出没ナビ（岩手県）</strong><br>
-  本サイトは、岩手県内で公開されている熊の目撃・被害情報をもとに、
-  地域別・時系列で傾向を把握できるよう可視化した参考情報です。
-</div><div id="counter" style="
-  position: fixed;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,255,255,0.9);
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  display: flex;
-  gap: 14px;
-  z-index: 10;
-">
-  <span id="damageCount" style="color:#ef4444">被害 0件</span>
-  <span id="sightingCount" style="color:#3b82f6">目撃 0件</span>
-</div>
-
-
-<div class="legend">
-  <div><span style="color:#ef4444">●</span> 被害</div>
-  <div><span style="color:#3b82f6">●</span> 目撃</div>
-  <div style="opacity:.7">※ 直近7日の被害は強調表示</div>
-</div>
 
 <script>
-  /* =========================
-     データ（スプシ由来）
-     title には必ず日付を含める
-     YYYY-MM-DD｜岩手県宮古市｜目撃/被害
-  ========================= */
-  const locations = [
-{ lat: 39.7429, lng: 141.1496, title: "45838｜岩手県盛岡市｜被害" },
-{ lat: 39.7056, lng: 141.0885, title: "45942｜岩手県盛岡市｜被害" },
-{ lat: 39.6864, lng: 141.0598, title: "44078｜岩手県盛岡市｜被害" },
-{ lat: 39.6502, lng: 141.2107, title: "43599｜岩手県盛岡市｜被害" },
-{ lat: 39.7268, lng: 141.1874, title: "43293｜岩手県盛岡市｜被害" }
-  ];
+const locations = [
+  {lat:39.7429,lng:141.1496},
+  {lat:39.7056,lng:141.0885}
+];
 
-  const NOW = new Date();
-  const DAY = 24 * 60 * 60 * 1000;
+const map = new maplibregl.Map({
+  container:"map",
+  style:"https://demotiles.maplibre.org/style.json",
+  center:[141.15,39.72],
+  zoom:11
+});
 
-  const map = new maplibregl.Map({
-    container: "map",
-    style: "https://demotiles.maplibre.org/style.json",
-    center: [141.95, 39.6],
-    zoom: 9
+map.on("load",()=>{
+  map.addSource("bears",{type:"geojson",data:{
+    type:"FeatureCollection",
+    features:locations.map(l=>({
+      type:"Feature",
+      geometry:{type:"Point",coordinates:[l.lng,l.lat]}
+    }))
+  }});
+
+  map.addLayer({
+    id:"points",
+    type:"circle",
+    source:"bears",
+    paint:{
+      "circle-radius":10,
+      "circle-color":"#ef4444"
+    }
   });
-
-  map.on("load", () => {// ▼ 上部カウンタ計算
-const damageCount = locations.filter(l => l.title.includes("被害")).length;
-const sightingCount = locations.filter(l => l.title.includes("目撃")).length;
-
-document.getElementById("damageCount").textContent = `被害 ${damageCount}件`;
-document.getElementById("sightingCount").textContent = `目撃 ${sightingCount}件`;
-
-
-    /* GeoJSONに変換 */
-    const features = locations.map(l => {
-      const isDamage = l.title.includes("被害");
-      const dateMatch = l.title.match(/\d{4}-\d{2}-\d{2}/);
-      const isRecent = dateMatch
-        ? (NOW - new Date(dateMatch[0])) <= 7 * DAY
-        : false;
-
-      return {
-        type: "Feature",
-        properties: {
-          isDamage,
-          isRecent,
-          title: l.title
-        },
-        geometry: {
-          type: "Point",
-          coordinates: [l.lng, l.lat]
-        }
-      };
-    });
-
-    map.addSource("bears", {
-      type: "geojson",
-      data: {
-        type: "FeatureCollection",
-        features
-      },
-      cluster: true,
-      clusterRadius: 40,
-      clusterMaxZoom: 12
-    });
-
-    /* クラスター */
-    map.addLayer({
-      id: "clusters",
-      type: "circle",
-      source: "bears",
-      filter: ["has", "point_count"],
-      paint: {
-        "circle-color": "#64748b",
-        "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 30, 26],
-        "circle-opacity": 0.85
-      }
-    });
-
-    map.addLayer({
-      id: "cluster-count",
-      type: "symbol",
-      source: "bears",
-      filter: ["has", "point_count"],
-      layout: {
-        "text-field": "{point_count_abbreviated}",
-        "text-size": 12
-      },
-      paint: {
-        "text-color": "#ffffff"
-      }
-    });
-
-    /* 通常：目撃 */
-    map.addLayer({
-      id: "points-sighting",
-      type: "circle",
-      source: "bears",
-      filter: ["all", ["!", ["has", "point_count"]], ["!", ["get", "isDamage"]]],
-      paint: {
-        "circle-radius": 7,
-        "circle-color": "#3b82f6",
-        "circle-stroke-width": 1,
-        "circle-stroke-color": "#ffffff"
-      }
-    });
-
-    /* 被害（最優先） */
-    map.addLayer({
-      id: "points-damage",
-      type: "circle",
-      source: "bears",
-      filter: ["all", ["!", ["has", "point_count"]], ["get", "isDamage"]],
-      paint: {
-        "circle-radius": 10,
-        "circle-color": "#ef4444",
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#ffffff"
-      }
-    });
-
-    /* 直近×被害（静かな外リング） */
-    map.addLayer({
-      id: "points-damage-recent-ring",
-      type: "circle",
-      source: "bears",
-      filter: ["all",
-        ["!", ["has", "point_count"]],
-        ["get", "isDamage"],
-        ["get", "isRecent"]
-      ],
-      paint: {
-        "circle-radius": 16,
-        "circle-color": "rgba(239,68,68,0.15)"
-      }
-    });
-
-    /* クリック */
-    ["points-sighting", "points-damage"].forEach(id => {
-      map.on("click", id, e => {
-        const p = e.features[0].properties;
-        new maplibregl.Popup()
-          .setLngLat(e.lngLat)
-          .setHTML(`<strong>${p.title}</strong>`)
-          .addTo(map);
-      });
-      map.on("mouseenter", id, () => map.getCanvas().style.cursor = "pointer");
-      map.on("mouseleave", id, () => map.getCanvas().style.cursor = "");
-    });
-  });
+});
 </script>
-<div style="
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  max-width: 260px;
-  background: rgba(255,255,255,0.85);
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 11px;
-  line-height: 1.6;
-  color: #475569;
-  z-index: 10;
-">
-  ※ 本情報は公開データをもとにした参考表示です。<br>
-  最新状況や安全判断については、必ず自治体・警察等の公式発表をご確認ください。
-</div>
+
 </body>
 </html>
-
