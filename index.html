@@ -1,190 +1,262 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<title>熊出没ナビ（岩手県）</title>
+<meta charset="utf-8" />
+<title>熊出没ナビ｜岩手県の熊目撃・被害マップ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description"
+  content="岩手県内で公開されている熊の目撃・被害情報を、地図と時系列で分かりやすく可視化しています。観光・登山・散歩前の参考に。" />
 
 <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
 
 <style>
-body { margin:0; font-family: system-ui, sans-serif; }
-#map { width:100vw; height:100vh; }
+html, body { margin:0; padding:0; height:100%; }
+#map { width:100%; height:100%; }
 
-/* ===== UI共通 ===== */
-.panel {
+/* ===== UI固定レイヤ ===== */
+.ui-box {
   position: fixed;
   background: rgba(255,255,255,0.92);
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 13px;
-  line-height: 1.6;
   z-index: 10;
 }
 
-/* 左上：市町村 */
-#city-tabs { top: 12px; left: 12px; display:flex; gap:6px; }
-#city-tabs button {
-  border:none; padding:6px 10px; border-radius:8px;
-  background:#e5e7eb; cursor:pointer;
+/* 左上：市町村切替 */
+#city-tabs {
+  top: 12px; left: 12px;
+  display: flex; gap: 6px;
 }
-#city-tabs button.active { background:#111827; color:#fff; }
+#city-tabs button {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #e5e7eb;
+}
+#city-tabs button.active {
+  background: #111827;
+  color: #fff;
+}
 
-/* 上部：集計 */
-#summary { top: 12px; left: 50%; transform: translateX(-50%); text-align:center; }
-#counts { font-weight:bold; margin-bottom:6px; }
+/* 上中央：集計 */
+#summary {
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 12px;
+  font-weight: bold;
+}
+
+/* 上中央下：説明 */
+#description {
+  top: 56px; left: 50%;
+  transform: translateX(-50%);
+  max-width: 520px;
+}
 
 /* 左下：凡例 */
-#legend { bottom: 12px; left: 12px; }
+#legend {
+  bottom: 12px; left: 12px;
+  line-height: 1.6;
+}
 
 /* 右下：注意 */
-#note { bottom: 12px; right: 12px; max-width: 260px; }
+#notice {
+  bottom: 12px; right: 12px;
+  max-width: 340px;
+  font-size: 12px;
+}
 </style>
 </head>
 
 <body>
-
 <div id="map"></div>
 
 <!-- 左上 -->
-<div id="city-tabs" class="panel">
-  <button data-city="all" class="active">岩手県 全体</button>
-  <button data-city="宮古市">宮古</button>
-  <button data-city="盛岡市">盛岡</button>
+<div id="city-tabs" class="ui-box">
+  <button data-city="all" class="active">全体</button>
+  <button data-city="盛岡">盛岡</button>
+  <button data-city="宮古">宮古</button>
 </div>
 
-<!-- 上部 -->
-<div id="summary" class="panel">
-  <div id="counts">被害 0件 ／ 目撃 0件</div>
-  <div id="summary-text">
-    岩手県内で公開されている熊の目撃・被害情報をもとに、
-    地域別・時系列で傾向を把握できるよう可視化しています。
-  </div>
+<!-- 上 -->
+<div id="summary" class="ui-box">
+  <span id="damageCount">被害 0件</span>
+  <span id="sightingCount">目撃 0件</span>
+</div>
+
+<div id="description" class="ui-box">
+  <strong>熊出没ナビ（岩手県）</strong><br>
+  本サイトは、岩手県内で公開されている熊の目撃・被害情報をもとに、
+  地域別・時系列で傾向を把握できるよう可視化した参考情報です。
 </div>
 
 <!-- 左下 -->
-<div id="legend" class="panel">
+<div id="legend" class="ui-box">
   <div><span style="color:#ef4444">●</span> 被害</div>
   <div><span style="color:#3b82f6">●</span> 目撃</div>
-  <div style="opacity:.7">※ 直近7日の被害は強調表示</div>
+  <div style="opacity:.7">※直近7日の被害は強調表示</div>
 </div>
 
 <!-- 右下 -->
-<div id="note" class="panel">
-  ※ 本情報は公開データをもとにした参考表示です。  
+<div id="notice" class="ui-box">
+  ※ 本情報は公開データをもとにした参考表示です。<br>
   最新状況や安全判断については、必ず自治体・警察等の公式発表をご確認ください。
 </div>
 
 <script>
-// ===== データ =====
+/* =========================
+   ① データ（ここは自分で入れる）
+========================= */
 const locations = [
-  // 宮古・盛岡を municipality で区別して入れる
-  // { lat, lng, municipality, type }
+  // { prefecture, municipality, latitude, longitude, date, type }
 ];
 
-// ===== 地図 =====
+/* =========================
+   ② Map 初期化
+========================= */
 const map = new maplibregl.Map({
   container: "map",
   style: "https://demotiles.maplibre.org/style.json",
-  center: [141.7, 39.6],
+  center: [141.5, 39.7],
   zoom: 7
 });
 
+const DAY = 24 * 60 * 60 * 1000;
 let currentCity = "all";
 
-map.on("load", () => {
-  updateMap();
-});
-
-// ===== 集計 =====
-function updateSummary(list) {
-  const damage = list.filter(l => l.type === "被害").length;
-  const sight = list.filter(l => l.type === "目撃").length;
-  document.getElementById("counts").textContent =
-    `被害 ${damage}件 ／ 目撃 ${sight}件`;
+/* =========================
+   ③ GeoJSON生成
+========================= */
+function buildGeoJSON(list) {
+  const now = new Date();
+  return {
+    type: "FeatureCollection",
+    features: list.map(l => ({
+      type: "Feature",
+      properties: {
+        municipality: l.municipality,
+        isDamage: l.type === "被害",
+        isRecent: l.date ? (now - new Date(l.date)) <= 7 * DAY : false
+      },
+      geometry: {
+        type: "Point",
+        coordinates: [l.longitude, l.latitude]
+      }
+    }))
+  };
 }
 
-// ===== 地図更新 =====
+/* =========================
+   ④ 集計
+========================= */
+function updateSummary(list) {
+  const d = list.filter(l => l.type === "被害").length;
+  const s = list.filter(l => l.type === "目撃").length;
+  document.getElementById("damageCount").textContent = `被害 ${d}件`;
+  document.getElementById("sightingCount").textContent = `目撃 ${s}件`;
+}
+
+/* =========================
+   ⑤ 地図更新（ここが核）
+========================= */
 function updateMap() {
   const filtered =
     currentCity === "all"
       ? locations
-      : locations.filter(l => l.municipality === currentCity);
+      : locations.filter(l => l.municipality.includes(currentCity));
 
   updateSummary(filtered);
 
-  const geojson = {
-    type: "FeatureCollection",
-    features: filtered.map(l => ({
-      type: "Feature",
-      properties: { type: l.type },
-      geometry: { type: "Point", coordinates: [l.lng, l.lat] }
-    }))
-  };
+  const geojson = buildGeoJSON(filtered);
 
-  if (map.getSource("bears")) {
+  if (!map.getSource("bears")) {
+    map.addSource("bears", {
+      type: "geojson",
+      data: geojson,
+      cluster: true,
+      clusterRadius: 50,
+      clusterMaxZoom: 12
+    });
+
+    // クラスタ円
+    map.addLayer({
+      id: "clusters",
+      type: "circle",
+      source: "bears",
+      filter: ["has", "point_count"],
+      paint: {
+        "circle-color": "#64748b",
+        "circle-radius": ["step", ["get","point_count"], 16, 10, 22, 30, 28],
+        "circle-opacity": 0.85
+      }
+    });
+
+    // クラスタ数字
+    map.addLayer({
+      id: "cluster-count",
+      type: "symbol",
+      source: "bears",
+      filter: ["has", "point_count"],
+      layout: {
+        "text-field": "{point_count_abbreviated}",
+        "text-size": 12
+      },
+      paint: { "text-color": "#fff" }
+    });
+
+    // 目撃
+    map.addLayer({
+      id: "points-sighting",
+      type: "circle",
+      source: "bears",
+      filter: ["all", ["!",["has","point_count"]], ["!",["get","isDamage"]]],
+      paint: {
+        "circle-radius": 6,
+        "circle-color": "#3b82f6",
+        "circle-stroke-color": "#fff",
+        "circle-stroke-width": 1
+      }
+    });
+
+    // 被害
+    map.addLayer({
+      id: "points-damage",
+      type: "circle",
+      source: "bears",
+      filter: ["all", ["!",["has","point_count"]], ["get","isDamage"]],
+      paint: {
+        "circle-radius": 9,
+        "circle-color": "#ef4444",
+        "circle-stroke-color": "#fff",
+        "circle-stroke-width": 1.5
+      }
+    });
+
+  } else {
     map.getSource("bears").setData(geojson);
-    return;
   }
-
-  map.addSource("bears", {
-    type: "geojson",
-    data: geojson,
-    cluster: true,
-    clusterRadius: 50
-  });
-
-  // クラスタ
-  map.addLayer({
-    id: "clusters",
-    type: "circle",
-    source: "bears",
-    filter: ["has", "point_count"],
-    paint: {
-      "circle-color": "#64748b",
-      "circle-radius": ["step", ["get","point_count"], 16, 10, 22, 30, 28]
-    }
-  });
-
-  map.addLayer({
-    id: "cluster-count",
-    type: "symbol",
-    source: "bears",
-    filter: ["has","point_count"],
-    layout: { "text-field": "{point_count_abbreviated}", "text-size": 12 },
-    paint: { "text-color": "#fff" }
-  });
-
-  // 目撃
-  map.addLayer({
-    id: "sighting",
-    type: "circle",
-    source: "bears",
-    filter: ["all", ["!",["has","point_count"]], ["==",["get","type"],"目撃"]],
-    paint: { "circle-radius":6, "circle-color":"#3b82f6" }
-  });
-
-  // 被害
-  map.addLayer({
-    id: "damage",
-    type: "circle",
-    source: "bears",
-    filter: ["all", ["!",["has","point_count"]], ["==",["get","type"],"被害"]],
-    paint: { "circle-radius":9, "circle-color":"#ef4444" }
-  });
 }
 
-// ===== 市町村切替 =====
+/* =========================
+   ⑥ UI操作
+========================= */
 document.querySelectorAll("#city-tabs button").forEach(btn => {
   btn.onclick = () => {
-    document.querySelectorAll("#city-tabs button").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll("#city-tabs button")
+      .forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentCity = btn.dataset.city;
     updateMap();
   };
 });
-</script>
 
+/* =========================
+   ⑦ 起動
+========================= */
+map.on("load", updateMap);
+</script>
 </body>
 </html>
