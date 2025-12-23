@@ -22,13 +22,30 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   z-index: 10;
 }
 
-/* 左上 */
-#city {
+/* トップページリンク */
+#homeLink {
   top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+  font-weight: bold;
+  padding: 8px 12px;
+}
+#homeLink a {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 県名表示 */
+#city {
+  top: 62px;
   left: 12px;
 }
 
-/* 上 */
+/* 上中央 */
 #counter {
   top: 12px;
   left: 50%;
@@ -50,9 +67,47 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 12px;
 }
 
+/* 都道府県セレクター */
+#prefectureSelector {
+  top: 112px;
+  left: 12px;
+  max-width: 150px;
+}
+#prefectureSelector .title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+#prefectureSelector a {
+  display: block;
+  padding: 8px 10px;
+  margin: 4px 0;
+  background: #f8fafc;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #334155;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+#prefectureSelector a:hover {
+  background: #e2e8f0;
+}
+#prefectureSelector a.active {
+  background: #3b82f6;
+  color: white;
+  font-weight: bold;
+}
+#prefectureSelector a.coming-soon {
+  opacity: 0.5;
+  pointer-events: none;
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
 /* エリア選択 */
 #areaSelector {
-  top: 60px;
+  top: 262px;
   left: 12px;
   max-width: 150px;
 }
@@ -176,13 +231,23 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 
 <div id="map"></div>
 
+<!-- トップページリンク -->
+<div id="homeLink" class="ui">
+  <a href="../index.html">🏠 熊出没ナビ</a>
+</div>
+
+<!-- 県名表示 -->
 <div id="city" class="ui">
   岩手県（全体）
 </div>
 
-<div id="counter" class="ui">
-  被害 <span id="damageCount">0</span>件 ／
-  目撃 <span id="sightingCount">0</span>件
+<!-- 都道府県セレクター（NEW!） -->
+<div id="prefectureSelector" class="ui">
+  <div class="title">📍 都道府県選択</div>
+  <a href="../iwate/" class="active">岩手県</a>
+  <a href="../akita/">秋田県</a>
+  <a href="../aomori/" class="coming-soon">青森県 <span style="font-size:10px;">準備中</span></a>
+  <a href="../yamagata/" class="coming-soon">山形県 <span style="font-size:10px;">準備中</span></a>
 </div>
 
 <!-- エリア選択 -->
@@ -191,6 +256,12 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   <a href="index.html" class="active">岩手県 全体</a>
   <a href="miyako.html">宮古市</a>
   <a href="morioka.html">盛岡市</a>
+</div>
+
+<!-- 統計カウンター -->
+<div id="counter" class="ui">
+  被害 <span id="damageCount">0</span>件 ／
+  目撃 <span id="sightingCount">0</span>件
 </div>
 
 <!-- 月別グラフ -->
@@ -219,19 +290,36 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   </div>
 </div>
 
+<!-- 凡例 -->
 <div id="legend" class="ui">
   <div><span style="color:#ef4444">●</span> 被害</div>
   <div><span style="color:#3b82f6">●</span> 目撃</div>
 </div>
 
+<!-- 注意書き -->
 <div id="note" class="ui">
   ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。  
   最新情報は必ず公式発表をご確認ください。
 </div>
 
 <script>
-/* ===== データ（ここに全市町村のデータを貼る） ===== */
+/* ========================================
+   ⭐ データ挿入エリア ⭐
+   ========================================
+   ここに岩手県のデータを貼り付けてください！
+   
+   フォーマット：
+   { lat: 緯度, lng: 経度, title: "ID｜岩手県○○市｜目撃｜YYYY-MM-DD" },
+   
+   例：
+   { lat: 39.5669218845071, lng: 141.914802611351, title: "424｜岩手県宮古市｜目撃｜2025-11-08" },
+   
+   ⚠️ 最後の行にはカンマ「,」を付けないでください！
+   ======================================== */
+
 const locations = [
+  // ↓↓↓ この下にデータを貼り付け ↓↓↓
+  
 { lat: 39.5797772686878, lng: 142.020661194983, title: "488｜岩手県宮古市｜目撃｜2025-12-20" },
 { lat: 39.6550304539014, lng: 141.955164379077, title: "487｜岩手県宮古市｜目撃｜2025-12-15" },
 { lat: 39.6197059481786, lng: 141.960868835449, title: "484｜岩手県宮古市｜目撃｜2025-12-07" },
@@ -327,7 +415,13 @@ const locations = [
 { lat: 39.6864, lng: 141.0598, title: "｜岩手県盛岡市｜被害｜2020-09-04" },
 { lat: 39.6502, lng: 141.2107, title: "｜岩手県盛岡市｜被害｜2019-05-14" },
 { lat: 39.7268, lng: 141.1874, title: "｜岩手県盛岡市｜被害｜2018-07-12" }
+  
+  // ↑↑↑ この上にデータを貼り付け ↑↑↑
+  // ⚠️ 最後の行にはカンマを付けない！
 ];
+
+/* ======================================== */
+
 
 /* ===== 月を抽出する関数 ===== */
 function getMonthFromTitle(title) {
@@ -397,8 +491,8 @@ drawMonthChart();
 const map = new maplibregl.Map({
   container: "map",
   style: "https://demotiles.maplibre.org/style.json",
-  center: [141.7, 39.6],
-  zoom: 7
+  center: [141.15, 39.7],  // 岩手県の中心
+  zoom: 7.5
 });
 
 let currentMonth = "all";
