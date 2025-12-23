@@ -22,13 +22,30 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   z-index: 10;
 }
 
-/* 左上 */
-#city {
+/* トップページリンク */
+#homeLink {
   top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+  font-weight: bold;
+  padding: 8px 12px;
+}
+#homeLink a {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 県名表示 */
+#city {
+  top: 62px;
   left: 12px;
 }
 
-/* 上 */
+/* 上中央 */
 #counter {
   top: 12px;
   left: 50%;
@@ -50,9 +67,47 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 12px;
 }
 
+/* 都道府県セレクター */
+#prefectureSelector {
+  top: 112px;
+  left: 12px;
+  max-width: 150px;
+}
+#prefectureSelector .title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+#prefectureSelector a {
+  display: block;
+  padding: 8px 10px;
+  margin: 4px 0;
+  background: #f8fafc;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #334155;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+#prefectureSelector a:hover {
+  background: #e2e8f0;
+}
+#prefectureSelector a.active {
+  background: #3b82f6;
+  color: white;
+  font-weight: bold;
+}
+#prefectureSelector a.coming-soon {
+  opacity: 0.5;
+  pointer-events: none;
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
 /* エリア選択 */
 #areaSelector {
-  top: 60px;
+  top: 262px;
   left: 12px;
   max-width: 150px;
 }
@@ -176,16 +231,26 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 
 <div id="map"></div>
 
+<!-- トップページリンク -->
+<div id="homeLink" class="ui">
+  <a href="../index.html">🏠 熊出没ナビ</a>
+</div>
+
+<!-- 県名表示 -->
 <div id="city" class="ui">
   秋田県（全体）
 </div>
 
-<div id="counter" class="ui">
-  被害 <span id="damageCount">0</span>件 ／
-  目撃 <span id="sightingCount">0</span>件
+<!-- 都道府県セレクター（NEW!） -->
+<div id="prefectureSelector" class="ui">
+  <div class="title">📍 都道府県選択</div>
+  <a href="../iwate/">岩手県</a>
+  <a href="../akita/" class="active">秋田県</a>
+  <a href="../aomori/" class="coming-soon">青森県 <span style="font-size:10px;">準備中</span></a>
+  <a href="../yamagata/" class="coming-soon">山形県 <span style="font-size:10px;">準備中</span></a>
 </div>
 
-<!-- エリア選択（将来的に実装予定）
+<!-- エリア選択（将来的に市町村を追加予定）
 <div id="areaSelector" class="ui">
   <div class="title">エリア選択</div>
   <a href="index.html" class="active">秋田県 全体</a>
@@ -194,6 +259,12 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   <a href="odate.html">大館市</a>
 </div>
 -->
+
+<!-- 統計カウンター -->
+<div id="counter" class="ui">
+  被害 <span id="damageCount">0</span>件 ／
+  目撃 <span id="sightingCount">0</span>件
+</div>
 
 <!-- 月別グラフ -->
 <div id="monthChart" class="ui">
@@ -221,19 +292,37 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   </div>
 </div>
 
+<!-- 凡例 -->
 <div id="legend" class="ui">
   <div><span style="color:#ef4444">●</span> 被害</div>
   <div><span style="color:#3b82f6">●</span> 目撃</div>
 </div>
 
+<!-- 注意書き -->
 <div id="note" class="ui">
   ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。  
   最新情報は必ず公式発表をご確認ください。
 </div>
 
 <script>
-/* ===== データ（ここに全市町村のデータを貼る） ===== */
+/* ========================================
+   ⭐ データ挿入エリア ⭐
+   ========================================
+   ここに秋田県のデータを貼り付けてください！
+   
+   フォーマット：
+   { lat: 緯度, lng: 経度, title: "ID｜秋田県○○市｜目撃｜YYYY-MM-DD" },
+   
+   例：
+   { lat: 39.72789237, lng: 140.1338395, title: "23067｜秋田県秋田市｜目撃｜2025-11-30" },
+   { lat: 39.33935305, lng: 140.574324, title: "23065｜秋田県横手市｜目撃｜2025-11-30" },
+   
+   ⚠️ 最後の行にはカンマ「,」を付けないでください！
+   ======================================== */
+
 const locations = [
+  // ↓↓↓ この下にデータを貼り付け ↓↓↓
+  
 { lat: 39.92315743, lng: 139.8274505, title: "23075｜秋田県男鹿市｜目撃｜2025-11-30" },
 { lat: 39.72789237, lng: 140.1338395, title: "23067｜秋田県秋田市｜目撃｜2025-11-30" },
 { lat: 39.33935305, lng: 140.574324, title: "23065｜秋田県横手市｜目撃｜2025-11-30" },
@@ -14059,7 +14148,13 @@ const locations = [
 { lat: 40.29584209, lng: 140.8279579, title: "6883｜秋田県鹿角市｜目撃｜2025-01-01" },
 { lat: 39.6341205, lng: 140.12614, title: "6881｜秋田県秋田市｜痕跡(その他)｜2025-01-01" },
 { lat: 39.39344574, lng: 140.228939, title: "6880｜秋田県由利本荘市｜目撃｜2025-01-01" }
+  
+  // ↑↑↑ この上にデータを貼り付け ↑↑↑
+  // ⚠️ 最後の行にはカンマを付けない！
 ];
+
+/* ======================================== */
+
 
 /* ===== 月を抽出する関数 ===== */
 function getMonthFromTitle(title) {
@@ -14294,4 +14389,3 @@ map.on("load", () => {
 
 </body>
 </html>
-
