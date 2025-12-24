@@ -87,11 +87,14 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   color: #94a3b8;
 }
 
-/* エリア選択 */
+/* ========================================
+   📍 スクロール可能なエリア選択
+   ======================================== */
 #areaSelector {
   top: 272px;
   left: 12px;
   max-width: 160px;
+  max-height: 120px;  /* 固定高さ */
 }
 #areaSelector .title {
   font-weight: bold;
@@ -99,7 +102,13 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 12px;
   color: #64748b;
 }
-#areaSelector a {
+#areaSelector .area-list {
+  max-height: 80px;  /* リスト部分のみスクロール */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+#areaSelector .area-list a {
   display: block;
   padding: 8px 10px;
   margin: 4px 0;
@@ -110,73 +119,37 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 13px;
   transition: all 0.2s;
 }
-#areaSelector a:hover {
+#areaSelector .area-list a:hover {
   background: #e2e8f0;
 }
-#areaSelector a.active {
+#areaSelector .area-list a.active {
   background: #3b82f6;
   color: white;
   font-weight: bold;
 }
 
-/* ========================================
-   📊 スクロール可能なデータ分析ボックス
-   ======================================== */
-#dataAnalysisBox {
-  top: 416px;
-  left: 12px;
-  max-width: 340px;
-  max-height: 480px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 8px;
-}
-
 /* スクロールバーのカスタムスタイル */
-#dataAnalysisBox::-webkit-scrollbar {
-  width: 8px;
+#areaSelector .area-list::-webkit-scrollbar {
+  width: 6px;
 }
-#dataAnalysisBox::-webkit-scrollbar-track {
+#areaSelector .area-list::-webkit-scrollbar-track {
   background: rgba(241, 245, 249, 0.5);
-  border-radius: 4px;
+  border-radius: 3px;
 }
-#dataAnalysisBox::-webkit-scrollbar-thumb {
+#areaSelector .area-list::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.5);
-  border-radius: 4px;
+  border-radius: 3px;
 }
-#dataAnalysisBox::-webkit-scrollbar-thumb:hover {
+#areaSelector .area-list::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.7);
-}
-
-/* データ分析ボックスのタイトル */
-.analysis-title {
-  font-weight: bold;
-  font-size: 12px;
-  color: #64748b;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-/* ボックス内の各セクション */
-.analysis-section {
-  margin-bottom: 16px;
-}
-
-/* 統計カウンター */
-#counter {
-  position: static;
-  font-weight: bold;
-  text-align: center;
-  font-size: 16px;
-  padding: 14px 12px;
-  margin-bottom: 12px;
 }
 
 /* 月別グラフ */
 #monthChart {
-  position: static;
-  margin-bottom: 12px;
+  bottom: 350px;  /* 被らない位置 */
+  left: 12px;
+  max-width: 340px;
+  max-height: 180px;
 }
 #monthChart .title {
   font-weight: bold;
@@ -224,8 +197,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 
 /* 月別フィルタ */
 #monthFilter {
-  position: static;
-  margin-bottom: 12px;
+  bottom: 110px;  /* 被らない位置 */
+  left: 12px;
+  max-width: 340px;
 }
 #monthFilter .title {
   font-weight: bold;
@@ -258,16 +232,15 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
-/* 注意書き */
-#note {
-  position: static;
-  font-size: 11px;
-  line-height: 1.5;
-  color: #64748b;
-  margin-bottom: 0;
+/* 上中央の統計カウンター */
+#counter {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
 }
 
-/* 凡例 */
+/* 左下の凡例 */
 #legend {
   bottom: 12px;
   left: 12px;
@@ -281,33 +254,41 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 12px;
 }
 
+/* 右下の注意書き */
+#note {
+  bottom: 12px;
+  right: 12px;
+  max-width: 280px;
+  font-size: 12px;
+}
+
 /* ========================================
    レスポンシブ対応
    ======================================== */
 
 @media (max-width: 768px) {
-  /* 左サイドバー */
-  #homeLink, #city, #prefectureSelector, #areaSelector, #dataAnalysisBox, #legend {
+  #homeLink, #city, #prefectureSelector, #areaSelector, 
+  #counter, #monthChart, #monthFilter, #legend, #note {
     position: relative;
     max-width: 100%;
     margin: 8px;
     left: 0;
     top: 0;
     bottom: auto;
-    max-height: none;
+    right: auto;
+    transform: none;
   }
   
-  #dataAnalysisBox {
+  #areaSelector .area-list {
+    max-height: none;
     overflow-y: visible;
   }
   
-  /* 地図の高さ調整 */
   #map {
     height: 50vh;
     min-height: 400px;
   }
   
-  /* 左サイドバーをページ上部に */
   body {
     display: flex;
     flex-direction: column;
@@ -325,10 +306,6 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   
   #counter {
     font-size: 14px;
-  }
-  
-  #dataAnalysisBox {
-    max-width: 100%;
   }
 }
 </style>
@@ -348,6 +325,12 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   岩手県（全体）
 </div>
 
+<!-- 統計カウンター（上中央） -->
+<div id="counter" class="ui">
+  被害 <span id="damageCount">0</span>件 ／
+  目撃 <span id="sightingCount">0</span>件
+</div>
+
 <!-- 都道府県セレクター -->
 <div id="prefectureSelector" class="ui">
   <div class="title">📍 都道府県選択</div>
@@ -357,56 +340,39 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   <a href="../yamagata/" class="coming-soon">山形県 <span style="font-size:10px;">準備中</span></a>
 </div>
 
-<!-- エリア選択 -->
+<!-- エリア選択（スクロール可能） -->
 <div id="areaSelector" class="ui">
   <div class="title">エリア選択</div>
-  <a href="index.html" class="active">岩手県 全体</a>
-  <a href="miyako.html">宮古市</a>
-  <a href="morioka.html">盛岡市</a>
+  <div class="area-list">
+    <a href="index.html" class="active">岩手県 全体</a>
+    <a href="miyako.html">宮古市</a>
+    <a href="morioka.html">盛岡市</a>
+  </div>
 </div>
 
-<!-- ========================================
-     📊 スクロール可能なデータ分析ボックス
-     ======================================== -->
-<div id="dataAnalysisBox" class="ui">
-  <div class="analysis-title">📊 データ分析</div>
-  
-  <!-- 統計カウンター -->
-  <div id="counter" class="ui analysis-section">
-    被害 <span id="damageCount">0</span>件 ／
-    目撃 <span id="sightingCount">0</span>件
-  </div>
+<!-- 月別グラフ -->
+<div id="monthChart" class="ui">
+  <div class="title">月別傾向</div>
+  <div class="chart" id="chartBars"></div>
+</div>
 
-  <!-- 月別グラフ -->
-  <div id="monthChart" class="ui analysis-section">
-    <div class="title">月別傾向</div>
-    <div class="chart" id="chartBars"></div>
-  </div>
-
-  <!-- 月別フィルタ -->
-  <div id="monthFilter" class="ui analysis-section">
-    <div class="title">月別フィルタ</div>
-    <div class="buttons">
-      <button data-month="all" class="active">全期間</button>
-      <button data-month="1">1月</button>
-      <button data-month="2">2月</button>
-      <button data-month="3">3月</button>
-      <button data-month="4">4月</button>
-      <button data-month="5">5月</button>
-      <button data-month="6">6月</button>
-      <button data-month="7">7月</button>
-      <button data-month="8">8月</button>
-      <button data-month="9">9月</button>
-      <button data-month="10">10月</button>
-      <button data-month="11">11月</button>
-      <button data-month="12">12月</button>
-    </div>
-  </div>
-
-  <!-- 注意書き -->
-  <div id="note" class="ui analysis-section">
-    ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。<br>
-    最新情報は必ず公式発表をご確認ください。
+<!-- 月別フィルタ -->
+<div id="monthFilter" class="ui">
+  <div class="title">月別フィルタ</div>
+  <div class="buttons">
+    <button data-month="all" class="active">全期間</button>
+    <button data-month="1">1月</button>
+    <button data-month="2">2月</button>
+    <button data-month="3">3月</button>
+    <button data-month="4">4月</button>
+    <button data-month="5">5月</button>
+    <button data-month="6">6月</button>
+    <button data-month="7">7月</button>
+    <button data-month="8">8月</button>
+    <button data-month="9">9月</button>
+    <button data-month="10">10月</button>
+    <button data-month="11">11月</button>
+    <button data-month="12">12月</button>
   </div>
 </div>
 
@@ -414,6 +380,12 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 <div id="legend" class="ui">
   <div><span style="color:#ef4444; font-size:16px;">●</span> <span>被害</span></div>
   <div><span style="color:#3b82f6; font-size:16px;">●</span> <span>目撃</span></div>
+</div>
+
+<!-- 注意書き -->
+<div id="note" class="ui">
+  ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。  
+  最新情報は必ず公式発表をご確認ください。
 </div>
 
 <script>
