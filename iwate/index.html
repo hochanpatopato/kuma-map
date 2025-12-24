@@ -24,11 +24,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* ========================================
-   📐 全要素をtopで配置（絶対に被らない）
-   ======================================== */
-
-/* トップページリンク - 高さ約40px */
+/* トップページリンク */
 #homeLink {
   top: 12px;
   left: 12px;
@@ -45,9 +41,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   gap: 6px;
 }
 
-/* 県名表示 - 高さ約40px */
+/* 県名表示 */
 #city {
-  top: 62px;  /* 12 + 40 + 10 = 62 */
+  top: 62px;
   left: 12px;
   font-weight: 600;
   font-size: 14px;
@@ -61,9 +57,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
-/* 都道府県セレクター - 高さ約150px */
+/* 都道府県セレクター */
 #prefectureSelector {
-  top: 112px;  /* 62 + 40 + 10 = 112 */
+  top: 112px;
   left: 12px;
   max-width: 160px;
 }
@@ -99,10 +95,12 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   color: #94a3b8;
 }
 
-/* エリア選択（スクロール可能） - 高さ約130px */
+/* ========================================
+   エリア選択を都道府県選択の横に配置
+   ======================================== */
 #areaSelector {
-  top: 272px;  /* 112 + 150 + 10 = 272 */
-  left: 12px;
+  top: 112px;
+  left: 184px;  /* 12 + 160 + 12 = 184 */
   max-width: 160px;
 }
 #areaSelector .title {
@@ -153,9 +151,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   background: rgba(148, 163, 184, 0.7);
 }
 
-/* 月別グラフ - 高さ約180px */
+/* 月別グラフ */
 #monthChart {
-  top: 412px;  /* 272 + 130 + 10 = 412 */
+  top: 272px;  /* 112 + 150 + 10 = 272 */
   left: 12px;
   max-width: 340px;
 }
@@ -203,9 +201,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   margin-top: 4px;
 }
 
-/* 月別フィルタ - 高さ約230px */
+/* 月別フィルタ */
 #monthFilter {
-  top: 602px;  /* 412 + 180 + 10 = 602 */
+  top: 462px;  /* 272 + 180 + 10 = 462 */
   left: 12px;
   max-width: 340px;
 }
@@ -240,7 +238,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
-/* 凡例 - 下固定 */
+/* 凡例 */
 #legend {
   bottom: 12px;
   left: 12px;
@@ -254,7 +252,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 12px;
 }
 
-/* 注意書き - 下固定 */
+/* 注意書き */
 #note {
   bottom: 12px;
   right: 12px;
@@ -293,7 +291,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   <a href="../yamagata/" class="coming-soon">山形県 <span style="font-size:10px;">準備中</span></a>
 </div>
 
-<!-- エリア選択（スクロール可能） -->
+<!-- エリア選択（都道府県の横） -->
 <div id="areaSelector" class="ui">
   <div class="title">エリア選択</div>
   <div class="area-list">
