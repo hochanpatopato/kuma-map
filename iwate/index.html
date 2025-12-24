@@ -16,11 +16,17 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 .ui {
   position: fixed;
   background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10px);
   padding: 10px 12px;
   border-radius: 10px;
   font-size: 13px;
   z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
+/* ========================================
+   左サイドバー（ナビゲーション系）
+   ======================================== */
 
 /* トップページリンク */
 #homeLink {
@@ -43,35 +49,15 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 #city {
   top: 62px;
   left: 12px;
-}
-
-/* 上中央 */
-#counter {
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-weight: bold;
-}
-
-/* 左下 */
-#legend {
-  bottom: 12px;
-  left: 12px;
-}
-
-/* 右下 */
-#note {
-  bottom: 12px;
-  right: 12px;
-  max-width: 280px;
-  font-size: 12px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 /* 都道府県セレクター */
 #prefectureSelector {
   top: 112px;
   left: 12px;
-  max-width: 150px;
+  max-width: 160px;
 }
 #prefectureSelector .title {
   font-weight: bold;
@@ -107,9 +93,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 
 /* エリア選択 */
 #areaSelector {
-  top: 262px;
+  top: 272px;
   left: 12px;
-  max-width: 150px;
+  max-width: 160px;
 }
 #areaSelector .title {
   font-weight: bold;
@@ -137,12 +123,66 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
+/* 凡例 */
+#legend {
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 12px;
+}
+#legend div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+/* ========================================
+   右サイドバー（データ可視化系）
+   ======================================== */
+
+/* 右サイドバーコンテナ */
+#rightSidebar {
+  position: fixed;
+  right: 12px;
+  top: 12px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* スクロールバーのスタイル */
+#rightSidebar::-webkit-scrollbar {
+  width: 6px;
+}
+#rightSidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+#rightSidebar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+#rightSidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* 統計カウンター */
+#counter {
+  position: static;
+  font-weight: bold;
+  text-align: center;
+  font-size: 16px;
+  padding: 14px 12px;
+}
+
 /* 月別グラフ */
 #monthChart {
-  bottom: 350px;
-  left: 12px;
-  max-width: 340px;
-  max-height: 180px;
+  position: static;
+  max-width: 100%;
 }
 #monthChart .title {
   font-weight: bold;
@@ -190,9 +230,8 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 
 /* 月別フィルタ */
 #monthFilter {
-  bottom: 110px;
-  left: 12px;
-  max-width: 340px;
+  position: static;
+  max-width: 100%;
 }
 #monthFilter .title {
   font-weight: bold;
@@ -224,12 +263,77 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   border-color: #3b82f6;
   font-weight: bold;
 }
+
+/* 注意書き */
+#note {
+  position: static;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+/* ========================================
+   レスポンシブ対応
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* 左サイドバー */
+  #homeLink, #city, #prefectureSelector, #areaSelector, #legend {
+    position: relative;
+    max-width: 100%;
+    margin: 8px;
+    left: 0;
+    top: 0;
+    bottom: auto;
+  }
+  
+  /* 右サイドバー */
+  #rightSidebar {
+    position: relative;
+    right: auto;
+    top: auto;
+    width: 100%;
+    max-height: none;
+    padding: 0 8px 8px 8px;
+    overflow-y: visible;
+  }
+  
+  /* 地図の高さ調整 */
+  #map {
+    height: 50vh;
+    min-height: 400px;
+  }
+  
+  /* 左サイドバーをページ上部に */
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #map {
+    order: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  #monthFilter .buttons {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  #counter {
+    font-size: 14px;
+  }
+}
 </style>
 </head>
 
 <body>
 
 <div id="map"></div>
+
+<!-- ========================================
+     左サイドバー（ナビゲーション）
+     ======================================== -->
 
 <!-- トップページリンク -->
 <div id="homeLink" class="ui">
@@ -241,7 +345,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   岩手県（全体）
 </div>
 
-<!-- 都道府県セレクター（NEW!） -->
+<!-- 都道府県セレクター -->
 <div id="prefectureSelector" class="ui">
   <div class="title">📍 都道府県選択</div>
   <a href="../iwate/" class="active">岩手県</a>
@@ -258,48 +362,56 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   <a href="morioka.html">盛岡市</a>
 </div>
 
-<!-- 統計カウンター -->
-<div id="counter" class="ui">
-  被害 <span id="damageCount">0</span>件 ／
-  目撃 <span id="sightingCount">0</span>件
-</div>
-
-<!-- 月別グラフ -->
-<div id="monthChart" class="ui">
-  <div class="title">月別傾向</div>
-  <div class="chart" id="chartBars"></div>
-</div>
-
-<!-- 月別フィルタ -->
-<div id="monthFilter" class="ui">
-  <div class="title">月別フィルタ</div>
-  <div class="buttons">
-    <button data-month="all" class="active">全期間</button>
-    <button data-month="1">1月</button>
-    <button data-month="2">2月</button>
-    <button data-month="3">3月</button>
-    <button data-month="4">4月</button>
-    <button data-month="5">5月</button>
-    <button data-month="6">6月</button>
-    <button data-month="7">7月</button>
-    <button data-month="8">8月</button>
-    <button data-month="9">9月</button>
-    <button data-month="10">10月</button>
-    <button data-month="11">11月</button>
-    <button data-month="12">12月</button>
-  </div>
-</div>
-
 <!-- 凡例 -->
 <div id="legend" class="ui">
-  <div><span style="color:#ef4444">●</span> 被害</div>
-  <div><span style="color:#3b82f6">●</span> 目撃</div>
+  <div><span style="color:#ef4444; font-size:16px;">●</span> <span>被害</span></div>
+  <div><span style="color:#3b82f6; font-size:16px;">●</span> <span>目撃</span></div>
 </div>
 
-<!-- 注意書き -->
-<div id="note" class="ui">
-  ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。  
-  最新情報は必ず公式発表をご確認ください。
+<!-- ========================================
+     右サイドバー（データ可視化）
+     ======================================== -->
+
+<div id="rightSidebar">
+  
+  <!-- 統計カウンター -->
+  <div id="counter" class="ui">
+    被害 <span id="damageCount">0</span>件 ／
+    目撃 <span id="sightingCount">0</span>件
+  </div>
+
+  <!-- 月別グラフ -->
+  <div id="monthChart" class="ui">
+    <div class="title">📊 月別傾向</div>
+    <div class="chart" id="chartBars"></div>
+  </div>
+
+  <!-- 月別フィルタ -->
+  <div id="monthFilter" class="ui">
+    <div class="title">📅 月別フィルタ</div>
+    <div class="buttons">
+      <button data-month="all" class="active">全期間</button>
+      <button data-month="1">1月</button>
+      <button data-month="2">2月</button>
+      <button data-month="3">3月</button>
+      <button data-month="4">4月</button>
+      <button data-month="5">5月</button>
+      <button data-month="6">6月</button>
+      <button data-month="7">7月</button>
+      <button data-month="8">8月</button>
+      <button data-month="9">9月</button>
+      <button data-month="10">10月</button>
+      <button data-month="11">11月</button>
+      <button data-month="12">12月</button>
+    </div>
+  </div>
+
+  <!-- 注意書き -->
+  <div id="note" class="ui">
+    ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。<br>
+    最新情報は必ず公式発表をご確認ください。
+  </div>
+
 </div>
 
 <script>
@@ -310,9 +422,6 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
    
    フォーマット：
    { lat: 緯度, lng: 経度, title: "ID｜岩手県○○市｜目撃｜YYYY-MM-DD" },
-   
-   例：
-   { lat: 39.5669218845071, lng: 141.914802611351, title: "424｜岩手県宮古市｜目撃｜2025-11-08" },
    
    ⚠️ 最後の行にはカンマ「,」を付けないでください！
    ======================================== */
