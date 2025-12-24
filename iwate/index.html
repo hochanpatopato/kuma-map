@@ -16,12 +16,10 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 .ui {
   position: fixed;
   background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(10px);
   padding: 10px 12px;
   border-radius: 10px;
   font-size: 13px;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* トップページリンク */
@@ -45,11 +43,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 #city {
   top: 62px;
   left: 12px;
-  font-weight: 600;
-  font-size: 14px;
 }
 
-/* 統計カウンター（上中央） */
+/* 上中央 */
 #counter {
   top: 12px;
   left: 50%;
@@ -57,11 +53,25 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
+/* 左下 */
+#legend {
+  bottom: 12px;
+  left: 12px;
+}
+
+/* 右下 */
+#note {
+  bottom: 12px;
+  right: 12px;
+  max-width: 280px;
+  font-size: 12px;
+}
+
 /* 都道府県セレクター */
 #prefectureSelector {
   top: 112px;
   left: 12px;
-  max-width: 160px;
+  max-width: 150px;
 }
 #prefectureSelector .title {
   font-weight: bold;
@@ -95,13 +105,11 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   color: #94a3b8;
 }
 
-/* ========================================
-   エリア選択を都道府県選択の横に配置
-   ======================================== */
+/* エリア選択 */
 #areaSelector {
-  top: 112px;
-  left: 184px;  /* 12 + 160 + 12 = 184 */
-  max-width: 160px;
+  top: 262px;
+  left: 12px;
+  max-width: 150px;
 }
 #areaSelector .title {
   font-weight: bold;
@@ -109,13 +117,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 12px;
   color: #64748b;
 }
-#areaSelector .area-list {
-  max-height: 90px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 4px;
-}
-#areaSelector .area-list a {
+#areaSelector a {
   display: block;
   padding: 8px 10px;
   margin: 4px 0;
@@ -126,36 +128,21 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 13px;
   transition: all 0.2s;
 }
-#areaSelector .area-list a:hover {
+#areaSelector a:hover {
   background: #e2e8f0;
 }
-#areaSelector .area-list a.active {
+#areaSelector a.active {
   background: #3b82f6;
   color: white;
   font-weight: bold;
 }
 
-/* スクロールバー */
-#areaSelector .area-list::-webkit-scrollbar {
-  width: 6px;
-}
-#areaSelector .area-list::-webkit-scrollbar-track {
-  background: rgba(241, 245, 249, 0.5);
-  border-radius: 3px;
-}
-#areaSelector .area-list::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.5);
-  border-radius: 3px;
-}
-#areaSelector .area-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.7);
-}
-
 /* 月別グラフ */
 #monthChart {
-  top: 272px;  /* 112 + 150 + 10 = 272 */
+  bottom: 350px;
   left: 12px;
   max-width: 340px;
+  max-height: 180px;
 }
 #monthChart .title {
   font-weight: bold;
@@ -203,7 +190,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 
 /* 月別フィルタ */
 #monthFilter {
-  top: 462px;  /* 272 + 180 + 10 = 462 */
+  bottom: 110px;
   left: 12px;
   max-width: 340px;
 }
@@ -238,26 +225,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
-/* 凡例 */
-#legend {
-  bottom: 12px;
-  left: 12px;
-  display: flex;
-  gap: 12px;
-}
 #legend div {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-}
-
-/* 注意書き */
-#note {
-  bottom: 12px;
-  right: 12px;
-  max-width: 280px;
-  font-size: 12px;
+  display: inline-block;
+  margin-right: 12px;
 }
 </style>
 </head>
@@ -291,14 +261,12 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   <a href="../yamagata/" class="coming-soon">山形県 <span style="font-size:10px;">準備中</span></a>
 </div>
 
-<!-- エリア選択（都道府県の横） -->
+<!-- エリア選択 -->
 <div id="areaSelector" class="ui">
   <div class="title">エリア選択</div>
-  <div class="area-list">
-    <a href="index.html" class="active">岩手県 全体</a>
-    <a href="miyako.html">宮古市</a>
-    <a href="morioka.html">盛岡市</a>
-  </div>
+  <a href="index.html" class="active">岩手県 全体</a>
+  <a href="miyako.html">宮古市</a>
+  <a href="morioka.html">盛岡市</a>
 </div>
 
 <!-- 月別グラフ -->
