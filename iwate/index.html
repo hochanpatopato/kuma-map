@@ -24,10 +24,6 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* ========================================
-   左サイドバー（ナビゲーション系）
-   ======================================== */
-
 /* トップページリンク */
 #homeLink {
   top: 12px;
@@ -123,51 +119,48 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
-/* 凡例 */
-#legend {
-  bottom: 12px;
-  left: 12px;
-  display: flex;
-  gap: 12px;
-}
-#legend div {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-}
-
 /* ========================================
-   右サイドバー（データ可視化系）
+   📊 スクロール可能なデータ分析ボックス
    ======================================== */
-
-/* 右サイドバーコンテナ */
-#rightSidebar {
-  position: fixed;
-  right: 12px;
-  top: 12px;
-  width: 340px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: calc(100vh - 24px);
+#dataAnalysisBox {
+  top: 416px;
+  left: 12px;
+  max-width: 340px;
+  max-height: 480px;
   overflow-y: auto;
-  padding-right: 4px;
+  overflow-x: hidden;
+  padding-right: 8px;
 }
 
-/* スクロールバーのスタイル */
-#rightSidebar::-webkit-scrollbar {
-  width: 6px;
+/* スクロールバーのカスタムスタイル */
+#dataAnalysisBox::-webkit-scrollbar {
+  width: 8px;
 }
-#rightSidebar::-webkit-scrollbar-track {
-  background: transparent;
+#dataAnalysisBox::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.5);
+  border-radius: 4px;
 }
-#rightSidebar::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
-  border-radius: 3px;
-}
-#rightSidebar::-webkit-scrollbar-thumb:hover {
+#dataAnalysisBox::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.5);
+  border-radius: 4px;
+}
+#dataAnalysisBox::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* データ分析ボックスのタイトル */
+.analysis-title {
+  font-weight: bold;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ボックス内の各セクション */
+.analysis-section {
+  margin-bottom: 16px;
 }
 
 /* 統計カウンター */
@@ -177,12 +170,13 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   text-align: center;
   font-size: 16px;
   padding: 14px 12px;
+  margin-bottom: 12px;
 }
 
 /* 月別グラフ */
 #monthChart {
   position: static;
-  max-width: 100%;
+  margin-bottom: 12px;
 }
 #monthChart .title {
   font-weight: bold;
@@ -231,7 +225,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 /* 月別フィルタ */
 #monthFilter {
   position: static;
-  max-width: 100%;
+  margin-bottom: 12px;
 }
 #monthFilter .title {
   font-weight: bold;
@@ -270,6 +264,21 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 11px;
   line-height: 1.5;
   color: #64748b;
+  margin-bottom: 0;
+}
+
+/* 凡例 */
+#legend {
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 12px;
+}
+#legend div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
 }
 
 /* ========================================
@@ -278,23 +287,17 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 
 @media (max-width: 768px) {
   /* 左サイドバー */
-  #homeLink, #city, #prefectureSelector, #areaSelector, #legend {
+  #homeLink, #city, #prefectureSelector, #areaSelector, #dataAnalysisBox, #legend {
     position: relative;
     max-width: 100%;
     margin: 8px;
     left: 0;
     top: 0;
     bottom: auto;
+    max-height: none;
   }
   
-  /* 右サイドバー */
-  #rightSidebar {
-    position: relative;
-    right: auto;
-    top: auto;
-    width: 100%;
-    max-height: none;
-    padding: 0 8px 8px 8px;
+  #dataAnalysisBox {
     overflow-y: visible;
   }
   
@@ -323,6 +326,10 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   #counter {
     font-size: 14px;
   }
+  
+  #dataAnalysisBox {
+    max-width: 100%;
+  }
 }
 </style>
 </head>
@@ -330,10 +337,6 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 <body>
 
 <div id="map"></div>
-
-<!-- ========================================
-     左サイドバー（ナビゲーション）
-     ======================================== -->
 
 <!-- トップページリンク -->
 <div id="homeLink" class="ui">
@@ -362,33 +365,27 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   <a href="morioka.html">盛岡市</a>
 </div>
 
-<!-- 凡例 -->
-<div id="legend" class="ui">
-  <div><span style="color:#ef4444; font-size:16px;">●</span> <span>被害</span></div>
-  <div><span style="color:#3b82f6; font-size:16px;">●</span> <span>目撃</span></div>
-</div>
-
 <!-- ========================================
-     右サイドバー（データ可視化）
+     📊 スクロール可能なデータ分析ボックス
      ======================================== -->
-
-<div id="rightSidebar">
+<div id="dataAnalysisBox" class="ui">
+  <div class="analysis-title">📊 データ分析</div>
   
   <!-- 統計カウンター -->
-  <div id="counter" class="ui">
+  <div id="counter" class="ui analysis-section">
     被害 <span id="damageCount">0</span>件 ／
     目撃 <span id="sightingCount">0</span>件
   </div>
 
   <!-- 月別グラフ -->
-  <div id="monthChart" class="ui">
-    <div class="title">📊 月別傾向</div>
+  <div id="monthChart" class="ui analysis-section">
+    <div class="title">月別傾向</div>
     <div class="chart" id="chartBars"></div>
   </div>
 
   <!-- 月別フィルタ -->
-  <div id="monthFilter" class="ui">
-    <div class="title">📅 月別フィルタ</div>
+  <div id="monthFilter" class="ui analysis-section">
+    <div class="title">月別フィルタ</div>
     <div class="buttons">
       <button data-month="all" class="active">全期間</button>
       <button data-month="1">1月</button>
@@ -407,11 +404,16 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   </div>
 
   <!-- 注意書き -->
-  <div id="note" class="ui">
+  <div id="note" class="ui analysis-section">
     ※ 本サイトは自治体等が公開している情報をもとにした参考表示です。<br>
     最新情報は必ず公式発表をご確認ください。
   </div>
+</div>
 
+<!-- 凡例 -->
+<div id="legend" class="ui">
+  <div><span style="color:#ef4444; font-size:16px;">●</span> <span>被害</span></div>
+  <div><span style="color:#3b82f6; font-size:16px;">●</span> <span>目撃</span></div>
 </div>
 
 <script>
@@ -429,7 +431,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 const locations = [
   // ↓↓↓ この下にデータを貼り付け ↓↓↓
   
-{ lat: 39.5797772686878, lng: 142.020661194983, title: "488｜岩手県宮古市｜目撃｜2025-12-20" },
+  { lat: 39.5797772686878, lng: 142.020661194983, title: "488｜岩手県宮古市｜目撃｜2025-12-20" },
 { lat: 39.6550304539014, lng: 141.955164379077, title: "487｜岩手県宮古市｜目撃｜2025-12-15" },
 { lat: 39.6197059481786, lng: 141.960868835449, title: "484｜岩手県宮古市｜目撃｜2025-12-07" },
 { lat: 39.6406611857563, lng: 141.937952041625, title: "483｜岩手県宮古市｜目撃｜2025-12-07" },
