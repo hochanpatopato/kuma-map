@@ -24,7 +24,11 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* トップページリンク */
+/* ========================================
+   📐 全要素をtopで配置（絶対に被らない）
+   ======================================== */
+
+/* トップページリンク - 高さ約40px */
 #homeLink {
   top: 12px;
   left: 12px;
@@ -41,17 +45,25 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   gap: 6px;
 }
 
-/* 県名表示 */
+/* 県名表示 - 高さ約40px */
 #city {
-  top: 62px;
+  top: 62px;  /* 12 + 40 + 10 = 62 */
   left: 12px;
   font-weight: 600;
   font-size: 14px;
 }
 
-/* 都道府県セレクター */
+/* 統計カウンター（上中央） */
+#counter {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+}
+
+/* 都道府県セレクター - 高さ約150px */
 #prefectureSelector {
-  top: 112px;
+  top: 112px;  /* 62 + 40 + 10 = 112 */
   left: 12px;
   max-width: 160px;
 }
@@ -87,14 +99,11 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   color: #94a3b8;
 }
 
-/* ========================================
-   📍 スクロール可能なエリア選択
-   ======================================== */
+/* エリア選択（スクロール可能） - 高さ約130px */
 #areaSelector {
-  top: 272px;
+  top: 272px;  /* 112 + 150 + 10 = 272 */
   left: 12px;
   max-width: 160px;
-  max-height: 120px;  /* 固定高さ */
 }
 #areaSelector .title {
   font-weight: bold;
@@ -103,7 +112,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   color: #64748b;
 }
 #areaSelector .area-list {
-  max-height: 80px;  /* リスト部分のみスクロール */
+  max-height: 90px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
@@ -128,7 +137,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
-/* スクロールバーのカスタムスタイル */
+/* スクロールバー */
 #areaSelector .area-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -144,12 +153,11 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   background: rgba(148, 163, 184, 0.7);
 }
 
-/* 月別グラフ */
+/* 月別グラフ - 高さ約180px */
 #monthChart {
-  bottom: 350px;  /* 被らない位置 */
+  top: 412px;  /* 272 + 130 + 10 = 412 */
   left: 12px;
   max-width: 340px;
-  max-height: 180px;
 }
 #monthChart .title {
   font-weight: bold;
@@ -195,9 +203,9 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   margin-top: 4px;
 }
 
-/* 月別フィルタ */
+/* 月別フィルタ - 高さ約230px */
 #monthFilter {
-  bottom: 110px;  /* 被らない位置 */
+  top: 602px;  /* 412 + 180 + 10 = 602 */
   left: 12px;
   max-width: 340px;
 }
@@ -232,15 +240,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-weight: bold;
 }
 
-/* 上中央の統計カウンター */
-#counter {
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-weight: bold;
-}
-
-/* 左下の凡例 */
+/* 凡例 - 下固定 */
 #legend {
   bottom: 12px;
   left: 12px;
@@ -254,59 +254,12 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
   font-size: 12px;
 }
 
-/* 右下の注意書き */
+/* 注意書き - 下固定 */
 #note {
   bottom: 12px;
   right: 12px;
   max-width: 280px;
   font-size: 12px;
-}
-
-/* ========================================
-   レスポンシブ対応
-   ======================================== */
-
-@media (max-width: 768px) {
-  #homeLink, #city, #prefectureSelector, #areaSelector, 
-  #counter, #monthChart, #monthFilter, #legend, #note {
-    position: relative;
-    max-width: 100%;
-    margin: 8px;
-    left: 0;
-    top: 0;
-    bottom: auto;
-    right: auto;
-    transform: none;
-  }
-  
-  #areaSelector .area-list {
-    max-height: none;
-    overflow-y: visible;
-  }
-  
-  #map {
-    height: 50vh;
-    min-height: 400px;
-  }
-  
-  body {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  #map {
-    order: 1;
-  }
-}
-
-@media (max-width: 480px) {
-  #monthFilter .buttons {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  #counter {
-    font-size: 14px;
-  }
 }
 </style>
 </head>
@@ -403,7 +356,7 @@ html, body { margin:0; height:100%; font-family: system-ui, sans-serif; }
 const locations = [
   // ↓↓↓ この下にデータを貼り付け ↓↓↓
   
-  { lat: 39.5797772686878, lng: 142.020661194983, title: "488｜岩手県宮古市｜目撃｜2025-12-20" },
+{ lat: 39.5797772686878, lng: 142.020661194983, title: "488｜岩手県宮古市｜目撃｜2025-12-20" },
 { lat: 39.6550304539014, lng: 141.955164379077, title: "487｜岩手県宮古市｜目撃｜2025-12-15" },
 { lat: 39.6197059481786, lng: 141.960868835449, title: "484｜岩手県宮古市｜目撃｜2025-12-07" },
 { lat: 39.6406611857563, lng: 141.937952041625, title: "483｜岩手県宮古市｜目撃｜2025-12-07" },
